@@ -1,4 +1,4 @@
-Python: 3.14.0
+Python: 3.12.10
 MiKTeX: 25.12
 CrewAI: (installed via pip)
 Matplotlib: (installed via pip)
