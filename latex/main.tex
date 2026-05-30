@@ -1,0 +1,26 @@
+\documentclass[12pt,a4paper]{book}
+
+% FR-8: TOC and basic structure
+% FR-14: BiDi/Hebrew support
+\usepackage{fontspec}
+\usepackage{polyglossia}
+
+\setdefaultlanguage{english}
+\setotherlanguage{hebrew}
+
+% We'll use a standard font available in Windows / MiKTeX if David isn't present
+\newfontfamily\hebrewfont[Script=Hebrew, Scale=MatchUppercase]{Arial}
+
+\title{Stub Topic Document}
+\author{Multi-Agent Generator}
+\date{\today}
+
+\begin{document}
+\frontmatter
+\maketitle
+\tableofcontents
+
+\mainmatter
+% Chapters will be included here
+
+\end{document}

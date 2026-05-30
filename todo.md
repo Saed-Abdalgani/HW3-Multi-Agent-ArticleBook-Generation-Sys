@@ -77,51 +77,51 @@ Use this table to confirm every required document element has at least one ownin
 > through the full pass sequence. Exit criteria: "hello world" `.tex` compiles to PDF.
 
 ### M0.1 — Toolchain installation & verification
-- [ ] `[P0]` Install MiKTeX (current release) and add it to `PATH`. (FR-17, R-6)
-- [ ] `[P0]` Verify `lualatex --version` runs from a fresh shell. (FR-17)
-- [ ] `[P1]` Verify `xelatex --version` runs as a fallback engine. (FR-17, R-6)
-- [ ] `[P0]` Verify `biber --version` and `bibtex --version` are available. (FR-15, R-6)
-- [ ] `[P1]` Configure MiKTeX package install to "Yes (ask me first)" or pre-install
+- [x] `[P0]` Install MiKTeX (current release) and add it to `PATH`. (FR-17, R-6)
+- [x] `[P0]` Verify `lualatex --version` runs from a fresh shell. (FR-17)
+- [x] `[P1]` Verify `xelatex --version` runs as a fallback engine. (FR-17, R-6)
+- [x] `[P0]` Verify `biber --version` and `bibtex --version` are available. (FR-15, R-6)
+- [x] `[P1]` Configure MiKTeX package install to "Yes (ask me first)" or pre-install
   required packages to avoid mid-build prompts. (R-6)
   > Note: Silent on-the-fly installs can hang headless runs; pre-install in CI-like setups.
-- [ ] `[P0]` Install Python 3.x and confirm `python --version`. (FR-9)
-- [ ] `[P0]` Install Matplotlib in the project environment via the package manager. (FR-9)
+- [x] `[P0]` Install Python 3.x and confirm `python --version`. (FR-9)
+- [x] `[P0]` Install Matplotlib in the project environment via the package manager. (FR-9)
   > Note: Use a managed venv/conda env; do not edit requirements files by hand.
-- [ ] `[P0]` Install CrewAI and required tool packages via the package manager. (FR-1)
-- [ ] `[P2]` Record exact tool versions in a `versions.txt` for reproducibility. (NFR-3)
+- [x] `[P0]` Install CrewAI and required tool packages via the package manager. (FR-1)
+- [x] `[P2]` Record exact tool versions in a `versions.txt` for reproducibility. (NFR-3)
 
 ### M0.2 — Hebrew font & BiDi prerequisites
-- [ ] `[P0]` Install a Hebrew-capable Unicode font (e.g., a David/Frank Ruehl class
+- [x] `[P0]` Install a Hebrew-capable Unicode font (e.g., a David/Frank Ruehl class
   OpenType font) and confirm the OS can resolve it. (FR-13, FR-14, R-1)
-- [ ] `[P1]` Confirm LuaLaTeX can load the font via `fontspec`. (FR-14, R-1)
-- [ ] `[P2]` Document the chosen font name and fallback in `versions.txt`. (NFR-10)
+- [x] `[P1]` Confirm LuaLaTeX can load the font via `fontspec`. (FR-14, R-1)
+- [x] `[P2]` Document the chosen font name and fallback in `versions.txt`. (NFR-10)
 
 ### M0.3 — Project working-directory skeleton
-- [ ] `[P0]` Create the working-directory layout from `plan.md` §1.4:
+- [x] `[P0]` Create the working-directory layout from `plan.md` §1.4:
   `content/`, `figures/`, `scripts/`, `latex/chapters/`, `build/`. (NFR-1, NFR-8)
-- [ ] `[P1]` Add a `.gitignore` for `build/` artifacts (`*.aux`, `*.log`, `*.pdf`,
+- [x] `[P1]` Add a `.gitignore` for `build/` artifacts (`*.aux`, `*.log`, `*.pdf`,
   `*.bbl`, `*.bcf`, `*.run.xml`, `*.toc`, `*.out`). (NFR-8)
-- [ ] `[P2]` Add a top-level `README` stub describing the run command. (NFR-10)
+- [x] `[P2]` Add a top-level `README` stub describing the run command. (NFR-10)
   > Note: Do not over-document; a short run snippet suffices for handoff.
 
 ### M0.4 — Minimal compiling skeleton & run entry point
-- [ ] `[P0]` Author a minimal `latex/main.tex` with document class, `fontspec`,
+- [x] `[P0]` Author a minimal `latex/main.tex` with document class, `fontspec`,
   Hebrew font setup, a cover stub, and `\tableofcontents`. (FR-8, FR-12)
-- [ ] `[P0]` Create a CLI/run entry point that accepts `--topic` and `--language`
+- [x] `[P0]` Create a CLI/run entry point that accepts `--topic` and `--language`
   arguments. (FR-5, US-1)
   > Note: Language drives RTL vs LTR base direction and font selection downstream.
-- [ ] `[P0]` Compile the skeleton through the full pass sequence and confirm a PDF
+- [x] `[P0]` Compile the skeleton through the full pass sequence and confirm a PDF
   is produced in `build/`. (FR-17, FR-18)
-- [ ] `[P1]` Capture the compile log and confirm zero errors. (FR-19)
+- [x] `[P1]` Capture the compile log and confirm zero errors. (FR-19)
 
 ### M0.5 — Secrets & configuration
-- [ ] `[P0]` Load LLM API credentials from environment variables / secret storage. (NFR-9)
+- [x] `[P0]` Load LLM API credentials from environment variables / secret storage. (NFR-9)
   > Note: Never hard-code or log secrets; reference them as redacted in any output. (R-10)
-- [ ] `[P1]` Add a config file/object for model name, temperature, and seed. (NFR-3)
-- [ ] `[P2]` Validate required env vars are present at startup with a clear error. (NFR-5)
+- [x] `[P1]` Add a config file/object for model name, temperature, and seed. (NFR-3)
+- [x] `[P2]` Validate required env vars are present at startup with a clear error. (NFR-5)
 
 ### M0 — Exit gate
-- [ ] `[P0]` ✅ Milestone M0 sign-off: skeleton compiles to PDF; toolchain verified;
+- [x] `[P0]` ✅ Milestone M0 sign-off: skeleton compiles to PDF; toolchain verified;
   config and secrets wired. (plan.md M0 exit criteria)
 
 ---

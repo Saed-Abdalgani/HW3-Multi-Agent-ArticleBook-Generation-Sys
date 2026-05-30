@@ -1,0 +1,5 @@
+Python: 3.14.0
+MiKTeX: 25.12
+CrewAI: (installed via pip)
+Matplotlib: (installed via pip)
+Hebrew Font fallback: Arial
