@@ -1,0 +1,15 @@
+---
+description: Points agents to the root system prompt (standards + Missing gap list).
+alwaysApply: true
+---
+
+# Project rules
+
+Follow **`SYSTEM_PROMPT.md`** at the **repository root** for:
+
+- Roles, core rules, workflow, architecture, code quality, testing, security  
+- Canonical vs HW3 directory mapping  
+- Final **READY / CONDITIONALLY READY / NOT READY** checklist  
+- The **Missing** section — current gaps vs `prd.md` / `plan.md` and engineering standards  
+
+If chat instructions conflict with `SYSTEM_PROMPT.md`, **user chat overrides** unless the user explicitly defers to the file.

@@ -132,58 +132,58 @@ Use this table to confirm every required document element has at least one ownin
 > skills, and tools; wire the crew end-to-end on a stub topic.
 
 ### M1.1 — Skills scaffolding (file-based packages)
-- [ ] `[P0]` Create the `skills/` root and one folder per skill with a required
+- [x] `[P0]` Create the `skills/` root and one folder per skill with a required
   `SKILL.md` (YAML front matter + Markdown body). (FR-2, NFR-1)
   > Note: Optional `references/` and `scripts/` subfolders per CrewAI skill anatomy.
-- [ ] `[P0]` Author `skills/technical-writing/SKILL.md` (structure, tone, house style).
+- [x] `[P0]` Author `skills/technical-writing/SKILL.md` (structure, tone, house style).
   (FR-2, US-3)
-- [ ] `[P0]` Author `skills/bidi-hebrew/SKILL.md` (RTL rules, LTR islands, term handling).
+- [x] `[P0]` Author `skills/bidi-hebrew/SKILL.md` (RTL rules, LTR islands, term handling).
   (FR-13, R-1)
-- [ ] `[P0]` Author `skills/latex-authoring/SKILL.md` (preamble, math, refs, conversion
+- [x] `[P0]` Author `skills/latex-authoring/SKILL.md` (preamble, math, refs, conversion
   rules). (FR-4, R-2, R-8)
-- [ ] `[P0]` Author `skills/figure-generation/SKILL.md` (diagram/graph/table conventions,
+- [x] `[P0]` Author `skills/figure-generation/SKILL.md` (diagram/graph/table conventions,
   path rules). (FR-9, FR-11)
-- [ ] `[P0]` Author `skills/qa-checklist/SKILL.md` (the technical contract checklist).
+- [x] `[P0]` Author `skills/qa-checklist/SKILL.md` (the technical contract checklist).
   (FR-20)
-- [ ] `[P1]` Author `skills/research-methodology/SKILL.md` (source vetting, `.bib` format).
+- [x] `[P1]` Author `skills/research-methodology/SKILL.md` (source vetting, `.bib` format).
   (FR-15)
-- [ ] `[P1]` Author `skills/document-structure/SKILL.md` (chapter plan, page budgeting).
+- [x] `[P1]` Author `skills/document-structure/SKILL.md` (chapter plan, page budgeting).
   (FR-7, FR-8)
-- [ ] `[P2]` Validate each `SKILL.md` YAML front matter parses (`name`, `description`,
+- [x] `[P2]` Validate each `SKILL.md` YAML front matter parses (`name`, `description`,
   `metadata`). (NFR-1)
   > Note: `description` is the agent's selection signal — keep it specific and action-oriented.
 
 ### M1.2 — Agent definitions
-- [ ] `[P0]` Define the **Research Agent** (role/goal/backstory) with
+- [x] `[P0]` Define the **Research Agent** (role/goal/backstory) with
   `research-methodology` skill and search/file-read tools. (FR-1, FR-2)
-- [ ] `[P0]` Define the **Outline/Architect Agent** with `document-structure` skill. (FR-1)
-- [ ] `[P0]` Define the **Writer Agent** with `technical-writing` + `bidi-hebrew` skills.
+- [x] `[P0]` Define the **Outline/Architect Agent** with `document-structure` skill. (FR-1)
+- [x] `[P0]` Define the **Writer Agent** with `technical-writing` + `bidi-hebrew` skills.
   (FR-1, FR-13)
-- [ ] `[P0]` Define the **Figure/Graph Agent** with `figure-generation` skill and a
+- [x] `[P0]` Define the **Figure/Graph Agent** with `figure-generation` skill and a
   Python-execution tool. (FR-1, FR-9)
-- [ ] `[P0]` Define the **LaTeX Builder Agent** with `latex-authoring` skill and
+- [x] `[P0]` Define the **LaTeX Builder Agent** with `latex-authoring` skill and
   file read/write tools. (FR-4)
-- [ ] `[P0]` Define the **Compilation Agent** with a shell/process-execution tool. (FR-17)
-- [ ] `[P0]` Define the **QA/Review Agent** with `qa-checklist` skill and log-parsing
+- [x] `[P0]` Define the **Compilation Agent** with a shell/process-execution tool. (FR-17)
+- [x] `[P0]` Define the **QA/Review Agent** with `qa-checklist` skill and log-parsing
   tools. (FR-20)
-- [ ] `[P2]` Confirm agent-level skills override crew-level skills where both exist. (FR-3)
+- [x] `[P2]` Confirm agent-level skills override crew-level skills where both exist. (FR-3)
 
 ### M1.3 — Skill wiring strategies
-- [ ] `[P1]` Wire per-agent skills via the `skills=[...]` parameter. (FR-3)
-- [ ] `[P2]` Optionally set crew-level default skills for shared "house culture". (FR-3)
-- [ ] `[P2]` Implement programmatic loading (`discover_skills` / `activate_skill`) as an
+- [x] `[P1]` Wire per-agent skills via the `skills=[...]` parameter. (FR-3)
+- [x] `[P2]` Optionally set crew-level default skills for shared "house culture". (FR-3)
+- [x] `[P2]` Implement programmatic loading (`discover_skills` / `activate_skill`) as an
   alternative path and document when to use each. (FR-3, NFR-1)
 
 ### M1.4 — Crew assembly & dry run
-- [ ] `[P0]` Assemble the Crew with agents + tasks in the correct order
+- [x] `[P0]` Assemble the Crew with agents + tasks in the correct order
   (research → outline → write → figures → latex → compile → QA). (FR-1)
-- [ ] `[P0]` Wire the shared working directory so artifacts pass between stages. (NFR-8)
-- [ ] `[P0]` Run the crew on a stub topic; confirm each stage emits a placeholder
+- [x] `[P0]` Wire the shared working directory so artifacts pass between stages. (NFR-8)
+- [x] `[P0]` Run the crew on a stub topic; confirm each stage emits a placeholder
   artifact. (US-9)
-- [ ] `[P1]` Add structured logging of each stage's inputs/outputs/artifacts. (NFR-8)
+- [x] `[P1]` Add structured logging of each stage's inputs/outputs/artifacts. (NFR-8)
 
 ### M1 — Exit gate
-- [ ] `[P0]` ✅ Milestone M1 sign-off: crew runs end-to-end on a stub producing
+- [x] `[P0]` ✅ Milestone M1 sign-off: crew runs end-to-end on a stub producing
   placeholder artifacts. (plan.md M1 exit criteria)
 
 ---
@@ -548,20 +548,20 @@ A single run produces a 15–20 page PDF that contains:
 
 > Confirm each agent has the right Skills (the "how") and Tools (the "what").
 
-- [ ] `[P0]` **Research Agent** — skill: `research-methodology`; tools: web/search,
-  file-read. (FR-1, FR-2)
-- [ ] `[P0]` **Outline/Architect Agent** — skill: `document-structure`; tools:
-  file read/write. (FR-1)
-- [ ] `[P0]` **Writer Agent** — skills: `technical-writing`, `bidi-hebrew`; tools:
-  file-write. (FR-1, FR-13)
-- [ ] `[P0]` **Figure/Graph Agent** — skill: `figure-generation`; tools: Python exec,
-  file-write. (FR-1, FR-9)
-- [ ] `[P0]` **LaTeX Builder Agent** — skill: `latex-authoring`; tools: file read/write.
+- [x] `[P0]` **Research Agent** — skill: `research-methodology`; tools: sandboxed
+  read/write (`read_workspace_file` incl. `prd.md` / `plan.md`; external web search deferred).
+  (FR-1, FR-2)
+- [x] `[P0]` **Outline/Architect Agent** — skill: `document-structure`; tools:
+  sandboxed file read/write. (FR-1)
+- [x] `[P0]` **Writer Agent** — skills: `technical-writing`, `bidi-hebrew`; tools:
+  sandboxed file read/write. (FR-1, FR-13)
+- [x] `[P0]` **Figure/Graph Agent** — skill: `figure-generation`; tools: whitelisted
+  Python stub + sandboxed file read/write. (FR-1, FR-9)
+- [x] `[P0]` **LaTeX Builder Agent** — skill: `latex-authoring`; tools: sandboxed file read/write.
   (FR-4)
-- [ ] `[P0]` **Compilation Agent** — tools: shell/process exec. (FR-17)
-- [ ] `[P0]` **QA/Review Agent** — skill: `qa-checklist`; tools: file-read, log parse.
-  (FR-20)
-- [ ] `[P2]` Confirm no agent is missing a required tool for its task. (NFR-5)
+- [x] `[P0]` **Compilation Agent** — tools: bounded `lualatex` subprocess (`run_lualatex_once`) + log read. (FR-17)
+- [x] `[P0]` **QA/Review Agent** — skill: `qa-checklist`; tools: sandboxed file read/write (log parse via read). (FR-20)
+- [x] `[P2]` Confirm no agent is missing a required tool for its task. (NFR-5)
 
 ---
 
@@ -588,8 +588,8 @@ A single run produces a 15–20 page PDF that contains:
 
 > Suggested critical path. Items on the same line can proceed in parallel.
 
-- [ ] `[P0]` 1. M0 toolchain + skeleton (blocks everything). (M0)
-- [ ] `[P0]` 2. M1 skills + agents + crew wiring. (M1)
+- [x] `[P0]` 1. M0 toolchain + skeleton (blocks everything). (M0)
+- [x] `[P0]` 2. M1 skills + agents + crew wiring. (M1)
 - [ ] `[P0]` 3. M2 outline → Markdown draft + `.bib` (gated by human review). (M2)
 - [ ] `[P0]` 4. M3 figures/tables/formulas (parallelizable per asset). (M3)
 - [ ] `[P0]` 5. M4 LaTeX assembly (needs M2 content + M3 assets). (M4)

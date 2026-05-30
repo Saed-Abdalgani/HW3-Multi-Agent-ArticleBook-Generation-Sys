@@ -1,4 +1,4 @@
-"""Compatibility entrypoint (prefer ``uv run articlebook``)."""
+"""Allow ``python -m articlebook``."""
 
 from articlebook.cli import main
 

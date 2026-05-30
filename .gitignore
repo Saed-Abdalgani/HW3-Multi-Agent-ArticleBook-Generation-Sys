@@ -1,3 +1,75 @@
+# -----------------------------------------------------------------------------
+# Secrets & local configuration (never commit)
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# Common alternate secret locations
+*.pem
+*.p12
+*.pfx
+secrets/
+.secrets/
+credentials.json
+*credentials*.json
+service-account*.json
+*.key
+*_token.txt
+.direnv/
+.envrc
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+.venv/
+venv/
+ENV/
+env/
+.python-version
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+dist/
+pip-log.txt
+pip-delete-this-directory.txt
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+*.cover
+.hypothesis/
+
+# -----------------------------------------------------------------------------
+# Jupyter / notebooks (checkpoints can embed outputs)
+# -----------------------------------------------------------------------------
+.ipynb_checkpoints/
+
+# -----------------------------------------------------------------------------
+# OS & editor junk (can leak paths / machine names)
+# -----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# Local IDE (may contain machine-specific paths or env injection)
+.idea/
+*.sublime-workspace
+
+# -----------------------------------------------------------------------------
+# LaTeX / MiKTeX build artifacts (project uses build/)
+# -----------------------------------------------------------------------------
 build/
 *.aux
 *.log
@@ -7,3 +79,11 @@ build/
 *.run.xml
 *.toc
 *.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb

@@ -1,0 +1,2 @@
+# Deprecated: dependencies are declared in pyproject.toml.
+# Use: uv sync && uv run articlebook --help
