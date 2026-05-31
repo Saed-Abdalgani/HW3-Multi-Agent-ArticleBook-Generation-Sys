@@ -1,4 +1,4 @@
-"""Assemble milestone crews (M1 full stack, M2 content pipeline)."""
+"""Assemble milestone crews (M1 full stack, M2 content, M3 figures + QA)."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ from typing import Any, Literal
 from crewai import LLM, Crew, Process
 
 from articlebook.crew.agents import build_agents
-from articlebook.crew.tasks import build_m1_tasks, build_m2_tasks
+from articlebook.crew.tasks import build_m1_tasks, build_m2_tasks, build_m3_tasks
 from articlebook.shared.paths import skills_root
 
-Milestone = Literal["m1", "m2"]
+Milestone = Literal["m1", "m2", "m3"]
 
 
 def build_m1_crew(
@@ -36,6 +36,17 @@ def build_m2_crew(
     return build_crew(llm, topic, language, milestone="m2", task_callback=task_callback)
 
 
+def build_m3_crew(
+    llm: LLM,
+    topic: str,
+    language: str,
+    *,
+    task_callback: Callable[[Any], None] | None = None,
+) -> Crew:
+    """M3 crew: M2 pipeline + figure generators + extended QA (FR-9)."""
+    return build_crew(llm, topic, language, milestone="m3", task_callback=task_callback)
+
+
 def build_crew(
     llm: LLM,
     topic: str,
@@ -55,6 +66,15 @@ def build_crew(
             agents["figure"],
             agents["latex"],
             agents["compile"],
+            agents["qa"],
+        ]
+    elif milestone == "m3":
+        tasks = build_m3_tasks(agents, topic, language)
+        ordered_agents = [
+            agents["research"],
+            agents["architect"],
+            agents["writer"],
+            agents["figure"],
             agents["qa"],
         ]
     else:

@@ -1,4 +1,4 @@
-"""High-level runners: stub vs LLM, milestones M1 (full) and M2 (content)."""
+"""High-level runners: stub vs LLM, milestones M1 (full), M2 (content), M3 (figures)."""
 
 from __future__ import annotations
 
@@ -14,11 +14,12 @@ from articlebook.crew.workspace_tools import (
 )
 from articlebook.inputs import log_resolved_run_config, validate_topic_language
 from articlebook.m2_stub import write_m2_stub_artifacts
+from articlebook.m3_assets import run_m3_python_generators, write_m3_stub_manifest
 from articlebook.shared.config import load_config
 from articlebook.shared.gatekeeper import create_llm
 from articlebook.shared.paths import project_root
 
-Milestone = Literal["m1", "m2"]
+Milestone = Literal["m1", "m2", "m3"]
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -82,8 +83,28 @@ def run_stub_m2(topic: str, language: str) -> None:
         reset_workspace_root(token)
 
 
+def run_stub_m3(topic: str, language: str) -> None:
+    """Deterministic M2 + M3: Markdown draft, `.bib`, Matplotlib assets, M3 manifest."""
+    inputs = validate_topic_language(topic, language)
+    root = project_root()
+    log = logging.getLogger(__name__)
+    log_resolved_run_config(inputs, mode="stub", milestone="m3")
+    token = bind_workspace_root(root)
+    try:
+        write_m2_stub_artifacts(root, inputs)
+        gen_log = run_m3_python_generators(root)
+        write_m3_stub_manifest(root, inputs, gen_log)
+        manifest_lines = ["figures/graph.pdf", "figures/image.png"]
+        (root / "figures").mkdir(parents=True, exist_ok=True)
+        man_path = root / "figures" / "m3_manifest.txt"
+        man_path.write_text("\n".join(manifest_lines) + "\n", encoding="utf-8")
+        log.info("stub.m3 complete root=%s", root)
+    finally:
+        reset_workspace_root(token)
+
+
 def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
-    """Execute CrewAI crew (requires OPENAI_API_KEY). Default milestone is M2 content pipeline."""
+    """Execute CrewAI crew (requires OPENAI_API_KEY). Milestone: m1 | m2 | m3."""
     inputs = validate_topic_language(topic, language)
     root = project_root()
     token = bind_workspace_root(root)
@@ -120,3 +141,8 @@ def run_llm_m1(topic: str, language: str) -> str:
 def run_llm_m2(topic: str, language: str) -> str:
     """M2 content pipeline via LLM agents."""
     return run_llm(topic, language, milestone="m2")
+
+
+def run_llm_m3(topic: str, language: str) -> str:
+    """M3 pipeline via LLM agents (M2 + figure generators + QA)."""
+    return run_llm(topic, language, milestone="m3")

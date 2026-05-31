@@ -31,11 +31,18 @@ uv run articlebook --stub --topic "Your Topic" --language English
 uv run articlebook --stub --milestone m1 --topic "Your Topic" --language English
 ```
 
-**LLM crew** — requires `OPENAI_API_KEY`. Default is **M2** (research → outline → chapters → QA). Use `--milestone m1` for the original full-stack crew:
+**Offline stub — M3** (everything in M2 plus `scripts/make_graph.py` / `make_image.py`, `figures/graph.pdf`, `figures/image.png`, and `build/m3_stub_manifest.md`; LaTeX showcase is `latex/chapters/m3_fr9_showcase.tex` included from `latex/main.tex`):
+
+```bash
+uv run articlebook --stub --milestone m3 --topic "Your Topic" --language English
+```
+
+**LLM crew** — requires `OPENAI_API_KEY`. Default is **M2** (research → outline → chapters → QA). Use `--milestone m1` for the original full-stack crew, or **`m3`** for M2 + figure generators + extended QA:
 
 ```bash
 uv run articlebook --topic "Your Topic" --language Hebrew
 uv run articlebook --milestone m1 --topic "Your Topic" --language English
+uv run articlebook --milestone m3 --topic "Your Topic" --language English
 ```
 
 Legacy entrypoint:

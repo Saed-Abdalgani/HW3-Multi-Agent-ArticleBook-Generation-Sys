@@ -12,6 +12,8 @@ from pathlib import Path
 
 from crewai.tools import tool
 
+from articlebook.m3_assets import run_m3_python_generators, verify_m3_figure_assets
+
 logger = logging.getLogger(__name__)
 
 _ALLOWED_PREFIXES = ("content/", "latex/", "figures/", "build/", "scripts/")
@@ -150,6 +152,21 @@ def run_matplotlib_stub(reason: str = "run") -> str:
     return run_matplotlib_stub_script(_root())
 
 
+@tool("run_m3_asset_generators")
+def run_m3_asset_generators(reason: str = "run") -> str:
+    """Run `scripts/make_graph.py` and `scripts/make_image.py` (M3 FR-9 binaries)."""
+    return run_m3_python_generators(_root())
+
+
+@tool("verify_m3_assets")
+def verify_m3_assets(reason: str = "check") -> str:
+    """Pre-build check: graph.pdf, image.png, and includegraphics targets from M3 TeX."""
+    ok, issues = verify_m3_figure_assets(_root())
+    if ok:
+        return "M3 asset check: OK"
+    return "M3 asset check: FAIL — " + "; ".join(issues)
+
+
 @tool("run_lualatex_once")
 def run_lualatex_once(reason: str = "run") -> str:
     """One LuaLaTeX pass on latex/main.tex into build/ (M1 smoke; full passes in M5)."""
@@ -162,5 +179,7 @@ def workspace_tools() -> list:
         write_workspace_file,
         read_workspace_file,
         run_matplotlib_stub,
+        run_m3_asset_generators,
+        verify_m3_assets,
         run_lualatex_once,
     ]

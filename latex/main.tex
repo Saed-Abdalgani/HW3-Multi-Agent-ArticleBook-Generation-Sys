@@ -2,6 +2,7 @@
 
 % FR-8: TOC and basic structure
 % FR-14: BiDi/Hebrew support
+% M3: graphics, TikZ, tables, math (FR-9, FR-10)
 \usepackage{fontspec}
 \usepackage{polyglossia}
 
@@ -11,6 +12,15 @@
 % We'll use a standard font available in Windows / MiKTeX if David isn't present
 \newfontfamily\hebrewfont[Script=Hebrew, Scale=MatchUppercase]{Arial}
 
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
+
 \title{Stub Topic Document}
 \author{Multi-Agent Generator}
 \date{\today}
@@ -19,8 +29,10 @@
 \frontmatter
 \maketitle
 \tableofcontents
+\listoffigures
+\listoftables
 
 \mainmatter
-% Chapters will be included here
+\input{chapters/m3_fr9_showcase}
 
 \end{document}

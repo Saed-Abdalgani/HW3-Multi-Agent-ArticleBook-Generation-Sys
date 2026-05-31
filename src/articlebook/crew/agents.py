@@ -7,7 +7,9 @@ from crewai import LLM, Agent
 from articlebook.crew.workspace_tools import (
     read_workspace_file,
     run_lualatex_once,
+    run_m3_asset_generators,
     run_matplotlib_stub,
+    verify_m3_assets,
     write_workspace_file,
 )
 from articlebook.shared.paths import skills_root
@@ -18,10 +20,11 @@ def _skill(folder: str) -> str:
 
 
 def build_agents(llm: LLM) -> dict[str, Agent]:
-    """Create ordered agents for the M1 pipeline (skills + sandboxed tools)."""
+    """Create ordered agents for M1/M2/M3 pipelines (skills + sandboxed tools)."""
     read_write = [write_workspace_file, read_workspace_file]
-    all_tools = read_write + [run_matplotlib_stub, run_lualatex_once]
+    figure_tools = read_write + [run_matplotlib_stub, run_m3_asset_generators, run_lualatex_once]
     compile_tools = [run_lualatex_once, read_workspace_file]
+    qa_tools = read_write + [verify_m3_assets]
 
     return {
         "research": Agent(
@@ -53,9 +56,12 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
         ),
         "figure": Agent(
             role="Figure and graph specialist",
-            goal="Execute the whitelisted Matplotlib stub and record figure metadata.",
-            backstory="You never execute arbitrary Python—only the approved stub script.",
-            tools=all_tools,
+            goal="Execute whitelisted Matplotlib scripts and record figure metadata.",
+            backstory=(
+                "You never execute arbitrary Python—only approved scripts under scripts/: "
+                "plot_stub_m1.py (M1), make_graph.py + make_image.py (M3)."
+            ),
+            tools=figure_tools,
             llm=llm,
             skills=[_skill("figure-generation")],
             verbose=True,
@@ -79,9 +85,9 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
         ),
         "qa": Agent(
             role="QA reviewer",
-            goal="Summarize artifact coverage and log health for milestone M1.",
-            backstory="You enforce the FR-20 checklist at placeholder depth.",
-            tools=read_write,
+            goal="Summarize artifact coverage and log health per milestone (M1/M2/M3).",
+            backstory="You enforce the FR-20 checklist; for M3 you also call verify_m3_assets.",
+            tools=qa_tools,
             llm=llm,
             skills=[_skill("qa-checklist")],
             verbose=True,

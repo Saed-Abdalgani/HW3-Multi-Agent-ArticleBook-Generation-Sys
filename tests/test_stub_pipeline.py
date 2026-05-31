@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from articlebook.pipeline import run_stub_m1, run_stub_m2
+from articlebook.pipeline import run_stub_m1, run_stub_m2, run_stub_m3
 from articlebook.shared.paths import project_root
 from articlebook.skills_inventory import list_discovered_skills
 
@@ -24,6 +24,13 @@ def test_stub_m2_writes_outline_chapters_and_bib() -> None:
     bidi = (root / "content" / "chapter_04_bidi_technical_note.md").read_text(encoding="utf-8")
     assert "CrewAI" in bidi or "crewai" in bidi.lower()
     assert (root / "build" / "m2_stub_manifest.md").is_file()
+
+
+def test_stub_m3_runs_after_m2_artifacts() -> None:
+    run_stub_m3(topic="Figures QA", language="Hebrew")
+    root = project_root()
+    assert (root / "content" / "outline.md").is_file()
+    assert (root / "figures" / "m3_manifest.txt").is_file()
 
 
 def test_discover_skills_names() -> None:
