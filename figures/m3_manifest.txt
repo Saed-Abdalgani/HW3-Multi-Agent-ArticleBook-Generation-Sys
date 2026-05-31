@@ -1,0 +1,2 @@
+figures/graph.pdf
+figures/image.png

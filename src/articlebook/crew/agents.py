@@ -5,6 +5,7 @@ from __future__ import annotations
 from crewai import LLM, Agent
 
 from articlebook.crew.workspace_tools import (
+    assemble_latex_document,
     read_workspace_file,
     run_lualatex_once,
     run_m3_asset_generators,
@@ -68,9 +69,15 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
         ),
         "latex": Agent(
             role="LaTeX builder",
-            goal="Emit a minimal chapter stub referencing assets under figures/.",
-            backstory="You translate Markdown anchors to TeX inputs without losing labels.",
-            tools=read_write,
+            goal=(
+                "Convert Markdown to .tex, assemble main.tex, "
+                "wire bibliography and preamble."
+            ),
+            backstory=(
+                "You translate Markdown and anchors to compilable LaTeX "
+                "using the assembly tool."
+            ),
+            tools=read_write + [assemble_latex_document],
             llm=llm,
             skills=[_skill("latex-authoring")],
             verbose=True,

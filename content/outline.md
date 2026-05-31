@@ -1,7 +1,7 @@
-# Outline: Multi-Agent Publishing
+# Outline: LaTeX Assembly
 
-- **Primary language:** Hebrew
-- **Base text direction:** rtl
+- **Primary language:** English
+- **Base text direction:** ltr
 - **Page target:** 15–20 (this outline: **~17 pages**).
 - **Aggregate word budget:** ~4250 words (~4250 at 250 w/page).
 

@@ -37,12 +37,19 @@ uv run articlebook --stub --milestone m1 --topic "Your Topic" --language English
 uv run articlebook --stub --milestone m3 --topic "Your Topic" --language English
 ```
 
-**LLM crew** — requires `OPENAI_API_KEY`. Default is **M2** (research → outline → chapters → QA). Use `--milestone m1` for the original full-stack crew, or **`m3`** for M2 + figure generators + extended QA:
+**Offline stub — M4** (M2 + M3 binaries, then **Markdown → `latex/chapters/*.tex`**, regenerated `latex/main.tex` with biblatex/hyperref/cleveref/fancyhdr/polyglossia, one LuaLaTeX pass logged to `build/m4_lualatex_once.log`):
+
+```bash
+uv run articlebook --stub --milestone m4 --topic "Your Topic" --language English
+```
+
+**LLM crew** — requires `OPENAI_API_KEY`. Default is **M2** (research → outline → chapters → QA). Use `--milestone m1` for the original full-stack crew, **`m3`** for M2 + figure generators + extended QA, or **`m4`** for M3 + LaTeX assembly + compile + QA:
 
 ```bash
 uv run articlebook --topic "Your Topic" --language Hebrew
 uv run articlebook --milestone m1 --topic "Your Topic" --language English
 uv run articlebook --milestone m3 --topic "Your Topic" --language English
+uv run articlebook --milestone m4 --topic "Your Topic" --language English
 ```
 
 Legacy entrypoint:
@@ -57,7 +64,7 @@ uv run python main.py --stub --topic "Your Topic" --language English
 - `skills/` — CrewAI `SKILL.md` packages (per-agent + `house-culture` at crew level)
 - `content/`, `figures/`, `scripts/`, `latex/`, `build/` — working tree for generated artifacts
 - `docs/PRD_m1_crew_and_skills.md` — mechanism PRD for milestone M1 wiring
-- `docs/PRD_m2_content_pipeline.md` — mechanism PRD for M2 content artifacts and CLI modes
+- `docs/PRD_m4_latex_assembly.md` — mechanism PRD for M4 Markdown→TeX and `main.tex` assembly
 
 ## Development
 

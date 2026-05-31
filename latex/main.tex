@@ -1,38 +1,59 @@
-\documentclass[12pt,a4paper]{book}
-
-% FR-8: TOC and basic structure
-% FR-14: BiDi/Hebrew support
-% M3: graphics, TikZ, tables, math (FR-9, FR-10)
+\documentclass[12pt,a4paper,twoside]{book}
+% --- M4: preamble ---
 \usepackage{fontspec}
 \usepackage{polyglossia}
-
 \setdefaultlanguage{english}
 \setotherlanguage{hebrew}
-
-% We'll use a standard font available in Windows / MiKTeX if David isn't present
-\newfontfamily\hebrewfont[Script=Hebrew, Scale=MatchUppercase]{Arial}
-
+\newfontfamily\hebrewfont[Script=Hebrew,Scale=MatchUppercase]{Arial}
 \usepackage{graphicx}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
 \usepackage{booktabs}
+\usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric-comp,sorting=nyt]{biblatex}
+\addbibresource{references.bib}
 \usepackage{hyperref}
-\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
-
-\title{Stub Topic Document}
-\author{Multi-Agent Generator}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue,pdftitle={LaTeX Assembly},pdfauthor={Multi-Agent ArticleBook}}
+\usepackage[nameinlink,capitalize]{cleveref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\renewcommand{\chaptermark}[1]{\markboth{\chaptername\ \thechapter.\ #1}{}}
+\title{LaTeX Assembly}
+\author{Multi-Agent ArticleBook}
 \date{\today}
-
 \begin{document}
 \frontmatter
-\maketitle
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Huge\bfseries LaTeX Assembly\par}
+\vspace{1.2cm}
+{\LARGE Thematic cover (M4)\par}
+\vspace{0.6cm}
+{\large\itshape English\par}
+\vfill
+{\Large Multi-Agent ArticleBook\par}
+\vspace{0.5cm}
+{\large \today\par}
+\end{titlepage}
 \tableofcontents
 \listoffigures
 \listoftables
-
 \mainmatter
+\input{chapters/chapter_01_scope}
+\input{chapters/chapter_02_markdown_first}
+\input{chapters/chapter_03_agents_and_crews}
+\input{chapters/chapter_04_bidi_technical_note}
+\input{chapters/chapter_05_latex_path}
+\input{chapters/chapter_06_conclusion}
 \input{chapters/m3_fr9_showcase}
-
+\backmatter
+\printbibliography[title={References}]
 \end{document}

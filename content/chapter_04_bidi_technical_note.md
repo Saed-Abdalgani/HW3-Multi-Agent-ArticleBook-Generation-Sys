@@ -1,7 +1,11 @@
-# BiDi technical note (Hebrew)
+# BiDi technical note (English)
 
 
-פרק זה מדגים טקסט עברי ככיוון בסיס מימין לשמאל, עם מונחים טכניים באנגלית בתוך אזורי LTR מובחנים. לדוגמה: המילה CrewAI ומספר הגרסה v1.2.3 צריכים להישאר קריאים לוגית.
+English base layout with an RTL quotation block demonstrating mixed runs:
+
+
+> עברית בתוך ציטוט RTL; nested term: `HTTP/2` on port `443`.
+
 
 
 

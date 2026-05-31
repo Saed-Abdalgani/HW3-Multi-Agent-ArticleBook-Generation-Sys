@@ -226,3 +226,158 @@ Aligned with `prd.md` §9: a single run yields a 15–20 page PDF with a themati
 chaptered structure with headers/footers, all required graphical/tabular/mathematical
 elements, a verified BiDi chapter, and a linked bibliography — with all internal links and
 citations resolving after the canonical compilation sequence.
+
+---
+
+## 9. Architecture Decision Records (ADRs)
+
+These records justify the framework boundaries so an evaluator can see what was
+considered and deliberately excluded.
+
+### ADR-001 — CrewAI as the sole orchestration framework
+- **Decision:** Use **CrewAI** (Agent / Task / Crew, `Process.sequential`) for all
+  orchestration; do **not** add LangChain, LangGraph, or A2A.
+- **Rationale:** LangChain, LangGraph, A2A, and CrewAI all occupy the *orchestration /
+  control-flow* layer and therefore compete — one is enough. The pipeline is a fixed
+  linear flow (research → outline → write → figures → LaTeX → compile → QA) with
+  role-based agents, which is exactly CrewAI's model. LangChain's linear chains are a
+  subset of what CrewAI provides; A2A solves cross-system/cross-vendor agent interop that
+  does not exist here (single local process; handoffs use `context=[...]` + the shared
+  working directory).
+- **Revisit if:** the flow needs dynamic branching, conditional re-planning, or stateful
+  loops with checkpoints → **LangGraph** would then become the stronger orchestrator.
+
+### ADR-002 — Compilation loop is plain Python, not an agent state machine
+- **Decision:** Implement the M5 "recompile until references resolve" loop as a
+  **deterministic Python `subprocess` driver**, not a LangGraph graph or an LLM agent loop.
+- **Rationale:** The canonical sequence (`lualatex → biber → lualatex ×2–3`, looping on
+  "rerun" warnings up to a safe cap) is deterministic and cheaper, more reliable, and more
+  testable as code than as agent reasoning. The Compilation agent simply *invokes* the
+  driver tool.
+
+### ADR-003 — RAG / vector DB is OPTIONAL, not core
+- **Decision:** Ship **without** RAG by default; provide an **optional, lightweight,
+  local** retrieval track (see §10.6 / M9) gated behind a config flag.
+- **Rationale:** The corpus is small and curated, and the grading requirement is
+  *bibliography correctness* (every in-text citation resolves to a `.bib` entry), not broad
+  knowledge retrieval. The real risk is *hallucinated citations* (R-7), mitigated more
+  cheaply by the `research-methodology` skill plus the M6 `.bib`↔in-text consistency check
+  than by a vector store. CrewAI does **not** replace RAG (RAG is a knowledge layer, not an
+  orchestration layer); we omit RAG on its own merits, not because CrewAI covers it.
+- **Revisit if:** sources must be live, verifiable, or numerous → enable the M9 retriever
+  tool (Chroma/FAISS + local embeddings) wrapped as a CrewAI tool for the Research agent.
+
+### ADR-004 — Provider now, config seam for local later
+- **Decision:** Use the **OpenAI provider** for LLM runs now; route all model construction
+  through the Gatekeeper with a `provider`/`model` config seam so **Ollama / Hugging Face**
+  can be added later without touching agents.
+- **Rationale:** Provider quality is needed for coursework output; a config seam keeps a
+  local/offline/cost-reduced path open without lock-in. Cloud deployment stays out of scope
+  (local CLI per PRD §1.4). The deterministic `--stub` path remains the zero-cost lane.
+
+---
+
+## 10. Production-Hardening Architecture (Audit Follow-up)
+
+This section captures the components needed to move from "strong PoC" to production-grade
+(repeatable, observable, modular, secure, testable, maintainable). All changes are
+**additive and backward-compatible**; the existing `--stub` path and CLI are preserved.
+
+### 10.1 Explicit Harness
+Make the implicit harness explicit and centralized so all 7 agents share one instrumented
+path: **input validation (`inputs.py`) → prompt/skill construction → sandboxed context
+assembly → model call (via Gatekeeper) → output parse/validate → logging + cost/latency →
+error handling + retries → guarded artifact write → final run report.** The missing middle
+is *call wrapping, output validation, and observability* (added in M7–M9).
+
+### 10.2 Gatekeeper hardening
+Promote `shared/gatekeeper.py` from an "LLM factory" to a **call wrapper**: config-driven
+**retries with backoff, timeout, optional rate limit/backpressure**, and **token/latency/
+cost capture**. `create_llm` signature is preserved for backward compatibility.
+
+### 10.3 Security & human-in-the-loop
+Add a thin guard layer (`shared/security.py`): input sanitization beyond length (control
+chars + simple instruction-injection heuristics on `topic`), a trust note for content fed
+into context (mitigate prompt injection / memory poisoning via files), an **overwrite
+dry-run guard** for `write_workspace_file`, and an explicit **human-approval gate before the
+paid LLM path** (`--yes` to bypass in automation). Existing boundaries (path allowlist, no
+arbitrary code exec, secret hygiene) are retained. Ship red-team test cases.
+
+### 10.4 Observability & run report
+Add `shared/observability.py`: a **run context** (`run_id`, timestamps) and a structured
+logger recording per-task inputs/outputs (redacted), token usage, latency, retries, and
+errors, then writing a single `build/run_report_<run_id>.{json,md}`. Hook into the existing
+`task_callback` in `pipeline.run_llm` and the Gatekeeper so a reviewer can reconstruct *why*
+an agent decided something.
+
+### 10.5 Configuration & versioning
+Externalize hardcoded settings into a versioned `config/` tree (Python defaults remain
+fallback): `config/models.yaml` (provider/model/temperature/seed/retries/limits),
+`config/agents.yaml` (role/goal/backstory/skills/tools), `config/tasks.yaml` (task
+descriptions + `expected_output` — a prompt registry). Each carries a `version` field
+(skills already do). This versions prompts, agents, tasks, and RAG/output schema.
+
+### 10.6 RAG & Vector DB (OPTIONAL — see ADR-003)
+Default: **off**. When enabled via `config/models.yaml` (`rag.enabled: true`), provide a
+**lightweight local** retrieval pipeline wrapped as a single CrewAI tool for the Research
+agent:
+
+| Component | Choice (minimal) |
+|-----------|------------------|
+| Document loader | Local files under a `knowledge/` folder (txt/md/pdf) |
+| Text splitter | Simple recursive character splitter (fixed size/overlap) |
+| Embeddings | Local model (e.g. `sentence-transformers`) to avoid extra API cost |
+| Vector store | **Chroma** or **FAISS** (local, file-backed; no server) |
+| Retriever | top-k similarity, returned as cited snippets |
+| Prompt template | Inject retrieved snippets + source IDs into the research task |
+| Citation handling | Map retrieved source IDs → `.bib` keys (feeds M6 consistency check) |
+| Output parser | Structured `{claim, source_id}` list for the Writer/`.bib` step |
+
+**Decision gate:** keep RAG **disabled** while the curated/stub corpus satisfies the
+bibliography contract; enable only if live or numerous sources are required. This honors
+"add it, unless it's simple" — it is wired into the plan but not on the default path.
+
+### 10.7 Provider / local / cloud strategy
+- **Now:** OpenAI provider (quality) + `--stub` (offline/CI, zero cost).
+- **Later:** add Ollama/HF behind the Gatekeeper `provider` seam for cost/privacy.
+- **Cloud:** out of scope (local CLI); no change recommended.
+
+---
+
+## 11. Production-Hardening Schedule (Milestones M7–M9)
+
+> These milestones run **alongside / after** the still-pending product milestones
+> **M5** (multi-pass compile + biber) and **M6** (QA contract + page count), which remain
+> the highest priority for a gradeable PDF. M7–M9 raise the system to production grade.
+
+### Phase 7 — Production Harness, Gatekeeper & Config (Milestone M7)
+- Wrap the Gatekeeper (retries/backoff/timeout/cost+latency capture); add output validation.
+- Externalize settings into `config/{models,agents,tasks}.yaml` with Python fallback.
+- Add `skills/compilation/SKILL.md` (canonical pass sequence) for the Compilation agent.
+- **Exit criteria:** LLM calls are retried/timed/costed; agents/tasks load from config;
+  `--stub` and CLI unchanged; new unit tests green.
+
+### Phase 8 — Security & Human-in-the-Loop (Milestone M8)
+- Add `shared/security.py` (input/output guards, injection heuristics, overwrite dry-run).
+- Add a human-approval gate before the paid LLM path (`--dry-run`, `--yes` CLI flags).
+- Add `skills/security-review/SKILL.md` for the QA/security gate.
+- **Exit criteria:** red-team tests pass (injection-via-topic rejected, traversal blocked,
+  poisoned-file handled, dry-run blocks overwrite); approval gate enforced by default.
+
+### Phase 9 — Observability & Run Reporting (Milestone M9)
+- Add `shared/observability.py` (run_id, structured logs, token/latency/error capture).
+- Emit `build/run_report_<run_id>.{json,md}` aggregating every stage.
+- **Exit criteria:** a single run produces a complete, redacted, replayable report.
+
+### Phase 9-OPT — RAG + Vector DB (Optional, gated by ADR-003)
+- Implement the §10.6 local retriever (Chroma/FAISS + local embeddings), wrapped as a
+  CrewAI tool, **disabled by default** (`rag.enabled: false`).
+- **Exit criteria (only if enabled):** retriever returns cited snippets mapped to `.bib`
+  keys; M6 consistency check passes against retrieved sources.
+
+| Milestone | Deliverable |
+|-----------|-------------|
+| M7 | Hardened Gatekeeper + config-driven agents/tasks + compilation skill |
+| M8 | Security guards + human-approval gate + security-review skill |
+| M9 | Structured observability + per-run report |
+| M9-OPT | Optional local RAG/vector-DB retriever (off by default) |

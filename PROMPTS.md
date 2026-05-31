@@ -6,7 +6,7 @@
 
 | Field | Value |
 |-------|-------|
-| Version | 3.05 |
+| Version | 3.06 |
 | Updated | 2026-05-31 |
 | Related docs | [README.md](README.md), [prd.md](prd.md), [plan.md](plan.md), [todo.md](todo.md) |
 
@@ -29,7 +29,7 @@ This document records significant AI-assisted development interactions: context,
 - **Dependencies:** Declared in [pyproject.toml](pyproject.toml); lock with [uv.lock](uv.lock) via `uv lock`. [requirements.txt](requirements.txt) is a pointer only.
 - **Reproducibility notes:** [versions.txt](versions.txt) is referenced in [todo.md](todo.md) for recording installed tool versions.
 - **Repo layout (present):** `src/articlebook/` package, `skills/`, `content/`, `figures/`, `scripts/`, `latex/` (with `chapters/`), `build/` (compile output); placeholders via `.gitkeep` where empty.
-- **Current implementation status:** **M1** — CrewAI sequential crew, skills, workspace tools, `--stub` M1 smoke, tests. **M2** — validated `topic`/`language`, default `--stub` + default LLM crew emit `content/outline.md`, `content/chapter_*.md`, BiDi chapter, `latex/references.bib`, `REVIEW_GATE.md`; see [docs/PRD_m2_content_pipeline.md](docs/PRD_m2_content_pipeline.md). **M3–M6** remain per [todo.md](todo.md).
+- **Current implementation status:** **M1–M4** — CrewAI crews through LaTeX assembly: **M2** (`docs/PRD_m2_content_pipeline.md`), **M3** FR-9 assets + showcase TeX, **M4** Markdown→`latex/chapters/*.tex`, generated `main.tex` (biblatex, hyperref, cleveref, fancyhdr, polyglossia, title page, TOC/LOF/LOT), tool `assemble_latex_document`, stub `--milestone m4` + LLM `m4` crew; see [docs/PRD_m4_latex_assembly.md](docs/PRD_m4_latex_assembly.md). **M5–M6** remain per [todo.md](todo.md).
 
 ---
 
@@ -313,9 +313,25 @@ Earlier homework used this file as a **long** step-by-step log (neural signal ex
 
 ---
 
+### 2026-05-31 — Milestone M4 (LaTeX assembly)
+
+**Goal:** `plan.md` / `todo.md` Phase M4 — assemble compilable `main.tex`, map Markdown chapters to `latex/chapters/*.tex`, preamble (FR-8, FR-12, FR-15–FR-16).
+
+**Changes (summary):**
+
+- `articlebook.m4_assembly` — Markdown subset → TeX, `write_main_tex`, manifests.
+- `assemble_latex_document` + extended `run_lualatex_once(log_filename=...)` in `workspace_tools`.
+- `build_m4_tasks`, `run_stub_m4`, CLI `--milestone m4`, `docs/PRD_m4_latex_assembly.md`, tests.
+
+**Key decisions:**
+
+- **English `\setdefaultlanguage`** + `hebrew` as `otherlanguage` for predictable first-pass builds; Hebrew-primary PDF deferred.
+- **biblatex** before **hyperref** before **cleveref**; one LuaLaTeX pass (M5 adds biber loop).
+
+---
+
 ### Next entries (suggested)
 
-- **M2–M5:** Content, figures, LaTeX builder, multi-pass compile.
-- **M6:** QA automation, final report updates.
+- **M5–M6:** Multi-pass compile + biber, QA automation, final report updates.
 
 Record each as a new subsection under **HW3 prompt log** using the template above.

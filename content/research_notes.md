@@ -1,4 +1,4 @@
-# Research notes: Multi-Agent Publishing
+# Research notes: LaTeX Assembly
 
 ## Vetted sources (stub corpus)
 
@@ -13,4 +13,4 @@
 - Every in-text marker in `content/chapter_*.md` maps to `latex/references.bib`.
 - No orphan `.bib` entries; no uncited keys in this stub.
 
-_Primary language for the run: Hebrew._
+_Primary language for the run: English._

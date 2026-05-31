@@ -6,7 +6,7 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 
 ## Missing (this repository vs PRD + standards)
 
-**Status:** `NOT READY` for assignment completion — **M1 crew + skills** and **M2 content pipeline (stub + LLM tasks)** landed; M3–M6 remain. Treat the list below as the live gap register; update it when milestones land.
+**Status:** `NOT READY` for assignment completion — **M1–M4** landed (stub + LLM paths through LaTeX assembly); **M5–M6** (multi-pass compile, QA contract, final PDF DoD) remain.
 
 ### Product / pipeline (PRD & `plan.md`)
 
@@ -15,12 +15,12 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 | **CrewAI crew** | **M1:** Sequential crew, agents, tasks, `--stub` path in `src/articlebook/`; LLM path requires API key and external spend. |
 | **Skills** | **M1:** `skills/*/SKILL.md` packages + `house-culture` crew default. |
 | **Topic & language in pipeline** | **M1:** Fed into task descriptions + stub artifacts; **M2:** validated inputs, RTL/LTR normalization, `content/` + `latex/references.bib` (stub deterministic; LLM crew default). |
-| **Markdown-first content** | **M2:** Six `content/chapter_*.md` + `outline.md` (stub); full LLM-authored quality varies with model. |
-| **15–20 page PDF** | Not enforced yet (M2 outline estimate only; M6 QA). |
-| **Required document elements** | No automated diagram, image, Python graph, table, or decorated formula pipeline (`figures/`, `scripts/` placeholders only). |
-| **Cover / TOC / headers** | LaTeX skeleton may be partial; no agent-driven assembly tied to topic/language (M4). |
-| **BiDi chapter** | **M2:** Markdown BiDi chapter stub + LLM task; not implemented end-to-end in PDF (FR-13–FR-14) until M4–M6. |
-| **Bibliography** | **M2:** `latex/references.bib` authored in stub/LLM tasks; no **biber/BibTeX** in compile loop yet (M5). |
+| **Markdown-first content** | **M2:** Six `content/chapter_*.md` + `outline.md`; **M4:** generated `latex/chapters/chapter_*.tex` + `main.tex`. |
+| **15–20 page PDF** | Not enforced yet (M2 outline estimate; M6 QA). |
+| **Required document elements** | **M3:** FR-9 assets + `m3_fr9_showcase.tex`; integrated in M4 `main.tex`. |
+| **Cover / TOC / headers** | **M4:** Thematic title page, `\tableofcontents`, LOF/LOT, `fancyhdr` in generated `main.tex`. |
+| **BiDi chapter** | **M2** Markdown + **M4** polyglossia (`english` main, `hebrew` other + font); full RTL-as-default PDF not automated (M4.4 follow-up). |
+| **Bibliography** | **M4:** `biblatex` + `\printbibliography`; **biber** + resolution in **M5**. |
 | **Multi-pass LaTeX** | Only **one** `lualatex` pass (FR-18 not met). |
 | **Compilation diagnostics** | Minimal stderr/stdout surfacing; no structured pass log for a QA agent (FR-19 partial). |
 | **QA agent / contract checks** | No link, citation, TOC, or formula verification (FR-20). |
@@ -36,7 +36,7 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 | **Tests** | **Partial:** `tests/` with pytest for skills YAML, stub pipeline, workspace sandbox (raise coverage with M2+). |
 | **Ruff / lint** | **Partial:** configured in `pyproject.toml`; run `uv run ruff check src tests`. |
 | **README** | **Improved:** uv install, stub vs LLM usage, troubleshooting (still grows with M4–M6). |
-| **Mechanism PRDs** | **Partial:** `docs/PRD_m1_crew_and_skills.md`, `docs/PRD_m2_content_pipeline.md`; add compile/QA PRDs with M5–M6. |
+| **Mechanism PRDs** | **Partial:** `docs/PRD_m1_crew_and_skills.md`, `docs/PRD_m2_content_pipeline.md`, `docs/PRD_m4_latex_assembly.md`; add M5 compile + M6 QA PRDs. |
 | **Cost / observability** | **Partial:** stage logging + task callback snippets; artifact index / cost notes still TODO for evaluators. |
 
 ### Security / repo hygiene (partially addressed)
