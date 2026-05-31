@@ -1,4 +1,4 @@
-# Research notes: LaTeX Assembly
+# Research notes: M5 Compile
 
 ## Vetted sources (stub corpus)
 

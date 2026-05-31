@@ -51,12 +51,20 @@ uv run articlebook --stub --milestone m4 --topic "Your Topic" --language English
 uv run articlebook --stub --milestone m5 --topic "Your Topic" --language English
 ```
 
+**Offline stub — M6 (full pipeline + QA gate)** — runs the M5 stub, then deterministic FR-20 checks (`build/m6_qa_report.md`). Exits with status **1** if the contract fails. On machines **without** MiKTeX, pass `--m6-allow-missing-pdf` so PDF/page checks and missing-engine compile status are relaxed (static checks still run; not a substitute for a real PDF sign-off):
+
+```bash
+uv run articlebook --stub --milestone m6 --topic "Your Topic" --language English
+uv run articlebook --stub --milestone m6 --m6-allow-missing-pdf --topic "Your Topic" --language English
+```
+
 **LLM crew** — requires `OPENAI_API_KEY`. Default is **M2** (research → outline → chapters → QA). Milestones:
 
 - `m1` — full-stack smoke (single `run_lualatex_once` in compile task)
 - `m3` — M2 + figure generators + extended QA
 - `m4` — M3 + LaTeX assembly + **one** compile pass in the crew task (legacy smoke)
 - **`m5`** — M3 + LaTeX assembly + **`run_latex_canonical_compile`** (multipass + biber) + QA on compile journal
+- **`m6`** — same as M5 crew tasks with `m6_crew` journal prefix + **`run_m6_contract_checks`**; CLI re-runs deterministic QA after kickoff and exits **1** on failure
 
 ```bash
 uv run articlebook --topic "Your Topic" --language Hebrew
@@ -64,6 +72,7 @@ uv run articlebook --milestone m1 --topic "Your Topic" --language English
 uv run articlebook --milestone m3 --topic "Your Topic" --language English
 uv run articlebook --milestone m4 --topic "Your Topic" --language English
 uv run articlebook --milestone m5 --topic "Your Topic" --language English
+uv run articlebook --milestone m6 --topic "Your Topic" --language English
 ```
 
 Legacy entrypoint:
@@ -82,7 +91,12 @@ Under `build/` (prefix from stub `m4`/`m5` or crew `m5_crew`):
 
 Mechanism PRD: [`docs/PRD_m5_compile.md`](docs/PRD_m5_compile.md).
 
-## Layout
+## M6 QA artifacts
+
+- `build/m6_qa_report.md` / `build/m6_qa_report.json` — deterministic FR-20 contract (links/refs log scan, bib↔cite, FR-9, structure, PDF page band, secret scan)
+- `build/m6_stub_manifest.md` — stub sign-off pointer (after `--stub --milestone m6`)
+
+Mechanism PRD: [`docs/PRD_m6_qa_contract.md`](docs/PRD_m6_qa_contract.md).
 
 - `src/articlebook/` — library: CLI, pipeline, CrewAI crew, `latex_compile/` (multipass driver; `compile_multipass.py` re-exports), workspace tools, gatekeeper LLM factory
 - `skills/` — CrewAI `SKILL.md` packages (per-agent + `house-culture` at crew level)
@@ -90,6 +104,7 @@ Mechanism PRD: [`docs/PRD_m5_compile.md`](docs/PRD_m5_compile.md).
 - `docs/PRD_m1_crew_and_skills.md` — mechanism PRD for milestone M1 wiring
 - `docs/PRD_m4_latex_assembly.md` — mechanism PRD for M4 Markdown→TeX and `main.tex` assembly
 - `docs/PRD_m5_compile.md` — multipass + biber driver
+- `docs/PRD_m6_qa_contract.md` — M6 deterministic QA contract (FR-20)
 - `handoff.md` — short pointer for the next agent session
 
 ## Development

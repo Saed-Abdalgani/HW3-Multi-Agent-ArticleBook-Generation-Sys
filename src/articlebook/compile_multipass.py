@@ -1,4 +1,7 @@
-"""Shim: keep ``articlebook.compile_multipass`` imports stable (implementation in ``latex_compile``)."""
+"""Shim: stable imports for ``articlebook.compile_multipass``.
+
+Implementation lives in ``articlebook.latex_compile``.
+"""
 
 from articlebook.latex_compile import (
     CompilePassRecord,

@@ -1,4 +1,4 @@
-"""Deterministic stub runners (M1–M5) for ``articlebook.pipeline``."""
+"""Deterministic stub runners (M1–M6) for ``articlebook.pipeline``."""
 
 from __future__ import annotations
 
@@ -16,7 +16,13 @@ from articlebook.crew.workspace_tools import (
 from articlebook.inputs import RunInputs, log_resolved_run_config, validate_topic_language
 from articlebook.m2_stub import write_m2_stub_artifacts
 from articlebook.m3_assets import run_m3_python_generators, write_m3_stub_manifest
-from articlebook.m4_assembly import assemble_latex_project, write_m4_stub_manifest, write_m5_stub_manifest
+from articlebook.m4_assembly import assemble_latex_project
+from articlebook.m4_manifest import (
+    write_m4_stub_manifest,
+    write_m5_stub_manifest,
+    write_m6_stub_manifest,
+)
+from articlebook.m6_qa import run_m6_contract_qa
 from articlebook.shared.paths import project_root
 
 
@@ -145,5 +151,24 @@ def run_stub_m5(topic: str, language: str) -> None:
             root, inputs, log_prefix="m5", manifest_writer=write_m5_stub_manifest
         )
         log.info("stub.m5 complete root=%s", root)
+    finally:
+        reset_workspace_root(token)
+
+
+def run_stub_m6(topic: str, language: str, *, allow_missing_pdf: bool = False) -> bool:
+    """M5 stub tree plus deterministic M6 contract QA; returns whether QA passed."""
+    inputs = validate_topic_language(topic, language)
+    root = project_root()
+    log = logging.getLogger(__name__)
+    log_resolved_run_config(inputs, mode="stub", milestone="m6")
+    token = bind_workspace_root(root)
+    try:
+        _stub_latex_through_m5_driver(
+            root, inputs, log_prefix="m5", manifest_writer=write_m5_stub_manifest
+        )
+        qa = run_m6_contract_qa(root, log_prefix="m5", allow_missing_pdf=allow_missing_pdf)
+        write_m6_stub_manifest(root, inputs, qa.passed)
+        log.info("stub.m6 complete root=%s qa_passed=%s", root, qa.passed)
+        return qa.passed
     finally:
         reset_workspace_root(token)

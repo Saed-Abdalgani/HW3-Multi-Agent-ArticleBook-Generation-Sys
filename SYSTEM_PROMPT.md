@@ -6,7 +6,7 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 
 ## Missing (this repository vs PRD + standards)
 
-**Status:** `NOT READY` for assignment completion — **M1–M5** landed (stub + LLM paths through canonical **LuaLaTeX/XeLaTeX + biber** multipass); **M6** (QA contract, page-count DoD, final PDF verification) remains.
+**Status:** `NOT READY` for assignment completion — **M1–M5** landed (stub + LLM paths through canonical **LuaLaTeX/XeLaTeX + biber** multipass); **M6** adds deterministic QA + `m6` milestone/CLI (full DoD still requires MiKTeX + PDF page band without `--m6-allow-missing-pdf`).
 
 ### Product / pipeline (PRD & `plan.md`)
 
@@ -16,14 +16,14 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 | **Skills** | **M1:** `skills/*/SKILL.md` packages + `house-culture` crew default. |
 | **Topic & language in pipeline** | **M1:** Fed into task descriptions + stub artifacts; **M2:** validated inputs, RTL/LTR normalization, `content/` + `latex/references.bib` (stub deterministic; LLM crew default). |
 | **Markdown-first content** | **M2:** Six `content/chapter_*.md` + `outline.md`; **M4:** generated `latex/chapters/chapter_*.tex` + `main.tex`. |
-| **15–20 page PDF** | Not enforced yet (M2 outline estimate; M6 QA). |
+| **15–20 page PDF** | M6 `pypdf` page band when `build/main.pdf` exists; stub content expanded for length. |
 | **Required document elements** | **M3:** FR-9 assets + `m3_fr9_showcase.tex`; integrated in M4 `main.tex`. |
 | **Cover / TOC / headers** | **M4:** Thematic title page, `\tableofcontents`, LOF/LOT, `fancyhdr` in generated `main.tex`. |
 | **BiDi chapter** | **M2** Markdown + **M4** polyglossia (`english` main, `hebrew` other + font); full RTL-as-default PDF not automated (M4.4 follow-up). |
 | **Bibliography** | **M5:** `biber` in `compile_latex_canonical` between engine passes; `biblatex` wired in M4. |
 | **Multi-pass LaTeX** | **M5:** `compile_latex_canonical` + tool `run_latex_canonical_compile`; per-pass logs + `build/*_compile_journal.json`. |
 | **Compilation diagnostics** | **M5:** per-pass logs, journal JSON, failure excerpt + error class (FR-19); M6 adds QA aggregation. |
-| **QA agent / contract checks** | No link, citation, TOC, or formula verification (FR-20). |
+| **QA agent / contract checks** | **M6:** `m6_qa.py` + `run_m6_contract_checks` + `build/m6_qa_report.*`; visual BiDi still manual. (FR-20) |
 
 ### Engineering standards (this system prompt)
 
@@ -36,7 +36,7 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 | **Tests** | **Partial:** `tests/` with pytest for skills YAML, stub pipeline, workspace sandbox (raise coverage with M2+). |
 | **Ruff / lint** | **Partial:** configured in `pyproject.toml`; run `uv run ruff check src tests`. |
 | **README** | **Improved:** uv install, stub vs LLM usage, troubleshooting (still grows with M4–M6). |
-| **Mechanism PRDs** | **Partial:** `docs/PRD_m1_crew_and_skills.md`, `docs/PRD_m2_content_pipeline.md`, `docs/PRD_m4_latex_assembly.md`, `docs/PRD_m5_compile.md`; add M6 QA PRD. |
+| **Mechanism PRDs** | **Partial:** `docs/PRD_m1_crew_and_skills.md`, `docs/PRD_m2_content_pipeline.md`, `docs/PRD_m4_latex_assembly.md`, `docs/PRD_m5_compile.md`, `docs/PRD_m6_qa_contract.md`. |
 | **Cost / observability** | **Partial:** stage logging + task callback snippets; artifact index / cost notes still TODO for evaluators. |
 
 ### Security / repo hygiene (partially addressed)

@@ -58,31 +58,31 @@ def _outline_md(topic: str, language: str, direction: str) -> str:
         "| # | Chapter file | Title | Pages | Words | Notes |",
         "|---|--------------|-------|-------|-------|-------|",
         (
-            "| 1 | `chapter_01_scope.md` | Scope, audience, definitions | 3 | 750 | "
+            "| 1 | `chapter_01_scope.md` | Scope, audience, definitions | 5 | 1300 | "
             "Cites [@knuth1984texbook]. |"
         ),
         (
-            "| 2 | `chapter_02_markdown_first.md` | Markdown-first authoring | 3 | 750 | "
+            "| 2 | `chapter_02_markdown_first.md` | Markdown-first authoring | 5 | 1300 | "
             "[@markdownguide2024]. |"
         ),
         (
-            "| 3 | `chapter_03_agents_and_crews.md` | Agents, crews, task graphs | 4 | 1000 | "
+            "| 3 | `chapter_03_agents_and_crews.md` | Agents, crews, task graphs | 6 | 1700 | "
             "[@crewai2024docs; @short2024llm]. |"
         ),
         (
-            "| 4 | `chapter_04_bidi_technical_note.md` | **BiDi demo** (RTL/LTR) | 3 | 750 | "
+            "| 4 | `chapter_04_bidi_technical_note.md` | **BiDi demo** (RTL/LTR) | 4 | 1200 | "
             "**Reserved** FR-13; Hebrew + English islands. |"
         ),
         (
-            "| 5 | `chapter_05_latex_path.md` | Markdown to LaTeX | 2 | 500 | "
+            "| 5 | `chapter_05_latex_path.md` | Markdown to LaTeX | 3 | 750 | "
             "[@lamport1994latex]. |"
         ),
         (
-            "| 6 | `chapter_06_conclusion.md` | Conclusion, risks, next steps | 2 | 500 | "
+            "| 6 | `chapter_06_conclusion.md` | Conclusion, risks, next steps | 3 | 750 | "
             "Wrap-up; no new citations. |"
         ),
     ]
-    total_pages = 3 + 3 + 4 + 3 + 2 + 2
+    total_pages = 5 + 5 + 6 + 4 + 3 + 3
     total_words = 0
     for r in rows[2:]:
         parts = [p.strip() for p in r.split("|")]
@@ -170,7 +170,11 @@ def _chapter_bidi(topic: str, language: str, rtl: bool) -> str:
         he = (
             "פרק זה מדגים טקסט עברי ככיוון בסיס מימין לשמאל, "
             "עם מונחים טכניים באנגלית בתוך אזורי LTR מובחנים. "
-            "לדוגמה: המילה CrewAI ומספר הגרסה v1.2.3 צריכים להישאר קריאים לוגית."
+            "לדוגמה: המילה CrewAI ומספר הגרסה v1.2.3 צריכים להישאר קריאים לוגית. "
+            "הטקסט הבא חוזה כדי להגדיל נפח עמודים ב־stub ולכוון ליעד הדפים ב־M6: "
+            "ניהול צינורות מסמכים מרובי סוכנים דורש הפרדה ברורה בין ידע, כלים, "
+            "ומצב הריצה. כל שלב צריך לאמת קלט, לכתוב פלט מובנה, ולרשום יומן "
+            "שחזור. עברית נשמרת כברירת מחדל ב־RTL, בעוד מזהים טכניים נשארים ב־LTR."
         )
         body = "\n\n".join([f"# BiDi technical note ({language})\n", he, "", ltr_note, ""])
     else:
@@ -232,21 +236,21 @@ def write_m2_stub_artifacts(root: Path, inputs: RunInputs) -> None:
     (content / "REVIEW_GATE.md").write_text(_review_gate(), encoding="utf-8")
 
     chapters = [
-        ("chapter_01_scope.md", "Scope, audience, definitions", 750, "[@knuth1984texbook]."),
+        ("chapter_01_scope.md", "Scope, audience, definitions", 1300, "[@knuth1984texbook]."),
         (
             "chapter_02_markdown_first.md",
             "Markdown-first authoring",
-            750,
+            1300,
             "[@markdownguide2024].",
         ),
         (
             "chapter_03_agents_and_crews.md",
             "Agents, crews, and task ordering",
-            1000,
+            1700,
             "[@crewai2024docs; @short2024llm].",
         ),
-        ("chapter_05_latex_path.md", "From Markdown to LaTeX", 500, "[@lamport1994latex]."),
-        ("chapter_06_conclusion.md", "Conclusion and next steps", 500, ""),
+        ("chapter_05_latex_path.md", "From Markdown to LaTeX", 750, "[@lamport1994latex]."),
+        ("chapter_06_conclusion.md", "Conclusion and next steps", 750, ""),
     ]
     for fname, title, words, cite in chapters:
         hint = f"Citations: {cite}" if cite else "Summary only; citations already established."
@@ -272,7 +276,7 @@ def write_m2_stub_artifacts(root: Path, inputs: RunInputs) -> None:
         "- `content/chapter_01_scope.md` … `chapter_06_conclusion.md`",
         "- `latex/references.bib`",
         "",
-        f"## Page estimate: ~{3+3+4+3+2+2} pages (target {PAGE_TARGET_LO}–{PAGE_TARGET_HI})",
+        f"## Page estimate: ~{5+5+6+4+3+3} pages (target {PAGE_TARGET_LO}–{PAGE_TARGET_HI})",
         "",
     ]
     (build / "m2_stub_manifest.md").write_text("\n".join(manifest), encoding="utf-8")

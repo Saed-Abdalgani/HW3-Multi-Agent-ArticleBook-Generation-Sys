@@ -57,3 +57,24 @@ def write_m5_stub_manifest(
         manifest_filename="m5_stub_manifest.md",
         compile_section_title="## M5 exit — canonical compile + biber + stabilization",
     )
+
+
+def write_m6_stub_manifest(root: Path, inputs: RunInputs, qa_passed: bool) -> None:
+    """Record M6 deterministic QA outcome (stub path)."""
+    build = root / "build"
+    build.mkdir(parents=True, exist_ok=True)
+    body = "\n".join(
+        [
+            "# M6 stub sign-off (contract QA)",
+            "",
+            f"- topic: {inputs.topic}",
+            f"- language: {inputs.language}",
+            f"- text_direction: {inputs.text_direction}",
+            f"- deterministic_qa_passed: **{qa_passed}**",
+            "",
+            "Compile trail: `build/m5_compile_journal.json` (stub uses `m5` log prefix).",
+            "Contract report: `build/m6_qa_report.md` / `m6_qa_report.json`.",
+            "",
+        ]
+    )
+    (build / "m6_stub_manifest.md").write_text(body, encoding="utf-8")

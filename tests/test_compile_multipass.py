@@ -11,8 +11,12 @@ def test_needs_extra_engine_pass_detects_rerun() -> None:
 
 def test_classify_failure_latex_error() -> None:
     assert (
-        classify_compile_failure("! LaTeX Error: undefined control sequence.", "")
+        classify_compile_failure("! LaTeX Error: something obscure.", "")
         == "latex_error"
+    )
+    assert (
+        classify_compile_failure("! LaTeX Error: undefined control sequence.", "")
+        == "undefined_control_sequence"
     )
 
 

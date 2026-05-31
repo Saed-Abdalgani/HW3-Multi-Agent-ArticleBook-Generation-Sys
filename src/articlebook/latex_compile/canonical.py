@@ -12,7 +12,11 @@ from articlebook.latex_compile.analysis import (
     needs_extra_engine_pass,
 )
 from articlebook.latex_compile.cmd import tail_text
-from articlebook.latex_compile.env import engine_available, prepare_miktex_path_on_windows, resolve_latex_engine
+from articlebook.latex_compile.env import (
+    engine_available,
+    prepare_miktex_path_on_windows,
+    resolve_latex_engine,
+)
 from articlebook.latex_compile.journal import finalize_compile_failure, write_compile_journal
 from articlebook.latex_compile.runner import PassRunner
 from articlebook.latex_compile.types import CompileReport, LaTeXEngine
@@ -84,7 +88,9 @@ def compile_latex_canonical(
 
     log_file = build_dir / "main.log"
     for round_i in range(max_rerun_rounds):
-        log_text = log_file.read_text(encoding="utf-8", errors="replace") if log_file.is_file() else ""
+        log_text = (
+            log_file.read_text(encoding="utf-8", errors="replace") if log_file.is_file() else ""
+        )
         report.needs_rerun_after_last = needs_extra_engine_pass(log_text)
         report.unresolved_log_lines = collect_unresolved_markers(log_text)
         if not report.needs_rerun_after_last:
@@ -96,7 +102,9 @@ def compile_latex_canonical(
             )
 
     report.pdf_exists = (build_dir / "main.pdf").is_file()
-    log_text = log_file.read_text(encoding="utf-8", errors="replace") if log_file.is_file() else ""
+    log_text = (
+        log_file.read_text(encoding="utf-8", errors="replace") if log_file.is_file() else ""
+    )
     report.needs_rerun_after_last = needs_extra_engine_pass(log_text)
     report.unresolved_log_lines = collect_unresolved_markers(log_text)
 

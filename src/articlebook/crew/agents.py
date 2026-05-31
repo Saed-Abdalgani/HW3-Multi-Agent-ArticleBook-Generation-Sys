@@ -10,6 +10,7 @@ from articlebook.crew.workspace_tools import (
     run_latex_canonical_compile,
     run_lualatex_once,
     run_m3_asset_generators,
+    run_m6_contract_checks,
     run_matplotlib_stub,
     verify_m3_assets,
     write_workspace_file,
@@ -26,7 +27,7 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
     read_write = [write_workspace_file, read_workspace_file]
     figure_tools = read_write + [run_matplotlib_stub, run_m3_asset_generators, run_lualatex_once]
     compile_tools = [run_lualatex_once, run_latex_canonical_compile, read_workspace_file]
-    qa_tools = read_write + [verify_m3_assets]
+    qa_tools = read_write + [verify_m3_assets, run_m6_contract_checks]
 
     return {
         "research": Agent(
@@ -99,8 +100,14 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
         ),
         "qa": Agent(
             role="QA reviewer",
-            goal="Summarize artifact coverage and log health per milestone (M1/M2/M3).",
-            backstory="You enforce the FR-20 checklist; for M3 you also call verify_m3_assets.",
+            goal=(
+                "Summarize artifact coverage, compile health, "
+                "and M6 deterministic contract results."
+            ),
+            backstory=(
+                "You enforce the FR-20 checklist; for M3 call verify_m3_assets; "
+                "for M6 call run_m6_contract_checks after canonical compile."
+            ),
             tools=qa_tools,
             llm=llm,
             skills=[_skill("qa-checklist")],

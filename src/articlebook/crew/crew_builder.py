@@ -14,10 +14,11 @@ from articlebook.crew.tasks import (
     build_m3_tasks,
     build_m4_tasks,
     build_m5_tasks,
+    build_m6_tasks,
 )
 from articlebook.shared.paths import skills_root
 
-Milestone = Literal["m1", "m2", "m3", "m4", "m5"]
+Milestone = Literal["m1", "m2", "m3", "m4", "m5", "m6"]
 
 
 def build_m1_crew(
@@ -75,6 +76,17 @@ def build_m5_crew(
     return build_crew(llm, topic, language, milestone="m5", task_callback=task_callback)
 
 
+def build_m6_crew(
+    llm: LLM,
+    topic: str,
+    language: str,
+    *,
+    task_callback: Callable[[Any], None] | None = None,
+) -> Crew:
+    """M6 crew: M5 pipeline + ``run_m6_contract_checks`` after canonical compile."""
+    return build_crew(llm, topic, language, milestone="m6", task_callback=task_callback)
+
+
 def build_crew(
     llm: LLM,
     topic: str,
@@ -98,6 +110,17 @@ def build_crew(
         ]
     elif milestone == "m5":
         tasks = build_m5_tasks(agents, topic, language)
+        ordered_agents = [
+            agents["research"],
+            agents["architect"],
+            agents["writer"],
+            agents["figure"],
+            agents["latex"],
+            agents["compile"],
+            agents["qa"],
+        ]
+    elif milestone == "m6":
+        tasks = build_m6_tasks(agents, topic, language)
         ordered_agents = [
             agents["research"],
             agents["architect"],
