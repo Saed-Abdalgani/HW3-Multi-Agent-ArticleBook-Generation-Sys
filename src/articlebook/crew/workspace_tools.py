@@ -6,6 +6,7 @@ import logging
 
 from crewai.tools import tool
 
+from articlebook.compile_multipass import compile_latex_canonical, compile_report_to_message
 from articlebook.crew.workspace_compile import compile_lualatex_once, run_matplotlib_stub_script
 from articlebook.crew.workspace_sandbox import (
     _ensure_under_root,
@@ -33,6 +34,7 @@ __all__ = [
     "verify_m3_assets",
     "assemble_latex_document",
     "run_lualatex_once",
+    "run_latex_canonical_compile",
     "workspace_tools",
 ]
 
@@ -105,6 +107,13 @@ def run_lualatex_once(reason: str = "run", log_filename: str = "m1_lualatex_once
     return compile_lualatex_once(_root(), log_filename=log_filename)
 
 
+@tool("run_latex_canonical_compile")
+def run_latex_canonical_compile(reason: str = "run", log_prefix: str = "m5_crew") -> str:
+    """M5: LuaLaTeX/XeLaTeX + biber + extra passes until stable (plan.md §4)."""
+    report = compile_latex_canonical(_root(), log_prefix=log_prefix)
+    return compile_report_to_message(report)
+
+
 def workspace_tools() -> list:
     """Tools shared across agents (bound root via bind_workspace_root)."""
     return [
@@ -115,4 +124,5 @@ def workspace_tools() -> list:
         verify_m3_assets,
         assemble_latex_document,
         run_lualatex_once,
+        run_latex_canonical_compile,
     ]

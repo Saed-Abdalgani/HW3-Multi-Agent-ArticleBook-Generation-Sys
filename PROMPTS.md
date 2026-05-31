@@ -6,7 +6,7 @@
 
 | Field | Value |
 |-------|-------|
-| Version | 3.06 |
+| Version | 3.07 |
 | Updated | 2026-05-31 |
 | Related docs | [README.md](README.md), [prd.md](prd.md), [plan.md](plan.md), [todo.md](todo.md) |
 
@@ -24,12 +24,12 @@ This document records significant AI-assisted development interactions: context,
 - **Flow (target):** **Markdown-first** authoring in a structured working tree, then Markdown → `.tex`, multi-pass **LuaLaTeX** + **biber/BibTeX**, with diagram / image / Python graph / table / math and **Hebrew–English BiDi** where required ([plan.md](plan.md) §1).
 - **Skills:** Per-agent **CrewAI Skills** live under `skills/*/SKILL.md` (see [plan.md](plan.md) §1.3); **M1** delivered the tree plus a crew-level `house-culture` skill.
 - **Tools:** Sandboxed workspace tools in `articlebook.crew.workspace_tools` (writes under `content/`, `latex/`, `figures/`, `build/`, `scripts/`; reads selected root docs). Optional web search tools remain future work behind Gatekeeper.
-- **Toolchain:** **MiKTeX** on Windows; compilation tools probe the default user MiKTeX `bin` when `lualatex` is missing from `PATH`. Bibliography from `.bib`; QA contract expands in M6 ([prd.md](prd.md) FR-17–FR-20).
-- **Configuration:** `articlebook.shared.config` loads `.env` via `python-dotenv`; requires `OPENAI_API_KEY` for LLM runs, exposes `MODEL_NAME` (default `gpt-4-turbo`), `TEMPERATURE`, `SEED`. See [.env.example](.env.example) (do not commit real secrets).
+- **Toolchain:** **MiKTeX** on Windows; `compile_latex_canonical` prepends default user MiKTeX `bin` when engines are missing from `PATH`. **`ARTICLEBOOK_LATEX_ENGINE`** selects `lualatex` vs `xelatex`. Bibliography: **biber** between passes ([docs/PRD_m5_compile.md](docs/PRD_m5_compile.md)); QA contract expands in M6 ([prd.md](prd.md) FR-17–FR-20).
+- **Configuration:** `articlebook.shared.config` loads `.env` via `python-dotenv`; requires `OPENAI_API_KEY` for LLM runs, exposes `MODEL_NAME` (default `gpt-4-turbo`), `TEMPERATURE`, `SEED`. Optional `ARTICLEBOOK_LATEX_ENGINE`. See [.env.example](.env.example) (do not commit real secrets).
 - **Dependencies:** Declared in [pyproject.toml](pyproject.toml); lock with [uv.lock](uv.lock) via `uv lock`. [requirements.txt](requirements.txt) is a pointer only.
 - **Reproducibility notes:** [versions.txt](versions.txt) is referenced in [todo.md](todo.md) for recording installed tool versions.
 - **Repo layout (present):** `src/articlebook/` package, `skills/`, `content/`, `figures/`, `scripts/`, `latex/` (with `chapters/`), `build/` (compile output); placeholders via `.gitkeep` where empty.
-- **Current implementation status:** **M1–M4** — CrewAI crews through LaTeX assembly: **M2** (`docs/PRD_m2_content_pipeline.md`), **M3** FR-9 assets + showcase TeX, **M4** Markdown→`latex/chapters/*.tex`, generated `main.tex` (biblatex, hyperref, cleveref, fancyhdr, polyglossia, title page, TOC/LOF/LOT), tool `assemble_latex_document`, stub `--milestone m4` + LLM `m4` crew; see [docs/PRD_m4_latex_assembly.md](docs/PRD_m4_latex_assembly.md). **M5–M6** remain per [todo.md](todo.md).
+- **Current implementation status:** **M1–M5** — adds `latex_compile/` package (+ `compile_multipass.py` shim), tool `run_latex_canonical_compile`, stub **`m4`/`m5`** multipass after assembly, LLM **`m5`** crew (`tasks_m5.py`), journals under `build/`; see [docs/PRD_m5_compile.md](docs/PRD_m5_compile.md). **M6** (QA DoD, page count, PDF contract) remains per [todo.md](todo.md).
 
 ---
 

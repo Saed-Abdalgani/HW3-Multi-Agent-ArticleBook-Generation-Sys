@@ -8,10 +8,16 @@ from typing import Any, Literal
 from crewai import LLM, Crew, Process
 
 from articlebook.crew.agents import build_agents
-from articlebook.crew.tasks import build_m1_tasks, build_m2_tasks, build_m3_tasks, build_m4_tasks
+from articlebook.crew.tasks import (
+    build_m1_tasks,
+    build_m2_tasks,
+    build_m3_tasks,
+    build_m4_tasks,
+    build_m5_tasks,
+)
 from articlebook.shared.paths import skills_root
 
-Milestone = Literal["m1", "m2", "m3", "m4"]
+Milestone = Literal["m1", "m2", "m3", "m4", "m5"]
 
 
 def build_m1_crew(
@@ -58,6 +64,17 @@ def build_m4_crew(
     return build_crew(llm, topic, language, milestone="m4", task_callback=task_callback)
 
 
+def build_m5_crew(
+    llm: LLM,
+    topic: str,
+    language: str,
+    *,
+    task_callback: Callable[[Any], None] | None = None,
+) -> Crew:
+    """M5 crew: M4 pipeline with canonical multipass compile + QA on compile journal."""
+    return build_crew(llm, topic, language, milestone="m5", task_callback=task_callback)
+
+
 def build_crew(
     llm: LLM,
     topic: str,
@@ -70,6 +87,17 @@ def build_crew(
     agents = build_agents(llm)
     if milestone == "m1":
         tasks = build_m1_tasks(agents, topic, language)
+        ordered_agents = [
+            agents["research"],
+            agents["architect"],
+            agents["writer"],
+            agents["figure"],
+            agents["latex"],
+            agents["compile"],
+            agents["qa"],
+        ]
+    elif milestone == "m5":
+        tasks = build_m5_tasks(agents, topic, language)
         ordered_agents = [
             agents["research"],
             agents["architect"],

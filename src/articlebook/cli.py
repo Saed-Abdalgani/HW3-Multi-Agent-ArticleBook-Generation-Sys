@@ -1,4 +1,4 @@
-"""Thin CLI entrypoint for milestones M1–M4 (stub + LLM)."""
+"""Thin CLI entrypoint for milestones M1–M5 (stub + LLM)."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from articlebook.pipeline import (
     run_stub_m2,
     run_stub_m3,
     run_stub_m4,
+    run_stub_m5,
     setup_logging,
 )
 from articlebook.shared.config import load_config_optional
@@ -28,9 +29,10 @@ def main() -> None:
     )
     parser.add_argument(
         "--milestone",
-        choices=("m1", "m2", "m3", "m4"),
+        choices=("m1", "m2", "m3", "m4", "m5"),
         default="m2",
-        help="m1=full smoke; m2=content; m3=M2+figures; m4=M3+LaTeX assembly+compile. Default: m2.",
+        help="m1=full smoke; m2=content; m3=M2+figures; m4=M3+LaTeX+one-pass crew compile; "
+        "m5=M4+canonical multipass (biber). Default: m2.",
     )
     parser.add_argument(
         "--stub",
@@ -59,9 +61,12 @@ def main() -> None:
         elif args.milestone == "m3":
             run_stub_m3(args.topic, args.language)
             print("M3 stub pipeline completed.")
-        else:
+        elif args.milestone == "m4":
             run_stub_m4(args.topic, args.language)
             print("M4 stub pipeline completed.")
+        else:
+            run_stub_m5(args.topic, args.language)
+            print("M5 stub pipeline completed.")
         return
 
     if load_config_optional() is None:

@@ -7,12 +7,13 @@ from pathlib import Path
 from articlebook.inputs import RunInputs
 from articlebook.m4_chapters import write_chapter_tex_files
 from articlebook.m4_main_tex import write_main_tex
-from articlebook.m4_manifest import write_m4_stub_manifest
+from articlebook.m4_manifest import write_m4_stub_manifest, write_m5_stub_manifest
 from articlebook.m4_md_to_tex import _convert_markdown_line, markdown_chapter_to_tex
 
 __all__ = [
     "assemble_latex_project",
     "write_m4_stub_manifest",
+    "write_m5_stub_manifest",
     "markdown_chapter_to_tex",
     "_convert_markdown_line",
 ]

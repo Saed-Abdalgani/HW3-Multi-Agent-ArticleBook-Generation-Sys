@@ -1,20 +1,22 @@
-"""Deterministic stub runners (M1–M4) for ``articlebook.pipeline``."""
+"""Deterministic stub runners (M1–M5) for ``articlebook.pipeline``."""
 
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
+from articlebook.compile_multipass import compile_latex_canonical, compile_report_to_message
 from articlebook.crew.workspace_tools import (
     bind_workspace_root,
     compile_lualatex_once,
     reset_workspace_root,
     run_matplotlib_stub_script,
 )
-from articlebook.inputs import log_resolved_run_config, validate_topic_language
+from articlebook.inputs import RunInputs, log_resolved_run_config, validate_topic_language
 from articlebook.m2_stub import write_m2_stub_artifacts
 from articlebook.m3_assets import run_m3_python_generators, write_m3_stub_manifest
-from articlebook.m4_assembly import assemble_latex_project, write_m4_stub_manifest
+from articlebook.m4_assembly import assemble_latex_project, write_m4_stub_manifest, write_m5_stub_manifest
 from articlebook.shared.paths import project_root
 
 
@@ -97,23 +99,51 @@ def run_stub_m3(topic: str, language: str) -> None:
     finally:
         reset_workspace_root(token)
 
+def _stub_latex_through_m5_driver(
+    root: Path,
+    inputs: RunInputs,
+    *,
+    log_prefix: str,
+    manifest_writer: Callable[[Path, RunInputs, list[str], str], None],
+) -> None:
+    """M2 + M3 + M4 assembly + canonical multipass compile (``compile_latex_canonical``)."""
+    write_m2_stub_artifacts(root, inputs)
+    gen_log = run_m3_python_generators(root)
+    write_m3_stub_manifest(root, inputs, gen_log)
+    (root / "figures").mkdir(parents=True, exist_ok=True)
+    _write_m3_figure_manifest(root / "figures")
+    stems = assemble_latex_project(root, inputs)
+    report = compile_latex_canonical(root, log_prefix=log_prefix)
+    manifest_writer(root, inputs, stems, compile_report_to_message(report))
+
 
 def run_stub_m4(topic: str, language: str) -> None:
-    """Deterministic M2 + M3 + M4: Markdown, assets, LaTeX assembly, one LuaLaTeX pass."""
+    """Deterministic M2 + M3 + M4: Markdown, assets, LaTeX assembly, multipass compile."""
     inputs = validate_topic_language(topic, language)
     root = project_root()
     log = logging.getLogger(__name__)
     log_resolved_run_config(inputs, mode="stub", milestone="m4")
     token = bind_workspace_root(root)
     try:
-        write_m2_stub_artifacts(root, inputs)
-        gen_log = run_m3_python_generators(root)
-        write_m3_stub_manifest(root, inputs, gen_log)
-        (root / "figures").mkdir(parents=True, exist_ok=True)
-        _write_m3_figure_manifest(root / "figures")
-        stems = assemble_latex_project(root, inputs)
-        compile_msg = compile_lualatex_once(root, log_filename="m4_lualatex_once.log")
-        write_m4_stub_manifest(root, inputs, stems, compile_msg)
+        _stub_latex_through_m5_driver(
+            root, inputs, log_prefix="m4", manifest_writer=write_m4_stub_manifest
+        )
         log.info("stub.m4 complete root=%s", root)
+    finally:
+        reset_workspace_root(token)
+
+
+def run_stub_m5(topic: str, language: str) -> None:
+    """Same tree as M4 stub; records ``m5_stub_manifest.md`` (M5 sign-off trail)."""
+    inputs = validate_topic_language(topic, language)
+    root = project_root()
+    log = logging.getLogger(__name__)
+    log_resolved_run_config(inputs, mode="stub", milestone="m5")
+    token = bind_workspace_root(root)
+    try:
+        _stub_latex_through_m5_driver(
+            root, inputs, log_prefix="m5", manifest_writer=write_m5_stub_manifest
+        )
+        log.info("stub.m5 complete root=%s", root)
     finally:
         reset_workspace_root(token)

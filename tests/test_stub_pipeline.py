@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from articlebook.pipeline import run_stub_m1, run_stub_m2, run_stub_m3, run_stub_m4
+from articlebook.pipeline import run_stub_m1, run_stub_m2, run_stub_m3, run_stub_m4, run_stub_m5
 from articlebook.shared.paths import project_root
 from articlebook.skills_inventory import list_discovered_skills
 
@@ -44,6 +44,16 @@ def test_stub_m4_assembles_main_tex() -> None:
     assert (root / "latex" / "chapters" / "chapter_01_scope.tex").is_file()
     assert "\\input{chapters/m3_fr9_showcase}" in main
     assert (root / "build" / "m4_stub_manifest.md").is_file()
+    manifest = (root / "build" / "m4_stub_manifest.md").read_text(encoding="utf-8")
+    assert "engine=" in manifest and "journal=" in manifest
+    assert (root / "build" / "m4_compile_journal.json").is_file()
+
+
+def test_stub_m5_writes_m5_manifest() -> None:
+    run_stub_m5(topic="M5 Compile", language="English")
+    root = project_root()
+    assert (root / "build" / "m5_stub_manifest.md").is_file()
+    assert (root / "build" / "m5_compile_journal.json").is_file()
 
 
 def test_discover_skills_names() -> None:

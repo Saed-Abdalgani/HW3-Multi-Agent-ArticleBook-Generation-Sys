@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import logging
-import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+from articlebook.compile_multipass import prepare_miktex_path_on_windows
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +18,7 @@ def compile_lualatex_once(root: Path, *, log_filename: str = "m1_lualatex_once.l
     latex_dir = root / "latex"
     build_dir = root / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
-    if os.name == "nt" and not shutil.which("lualatex"):
-        miktex = os.path.expandvars(r"%LOCALAPPDATA%\Programs\MiKTeX\miktex\bin\x64")
-        if os.path.isdir(miktex):
-            os.environ["PATH"] = miktex + os.pathsep + os.environ.get("PATH", "")
+    prepare_miktex_path_on_windows()
     if not shutil.which("lualatex"):
         log_path = build_dir / log_filename
         msg = "lualatex not found on PATH; skipped smoke compile (install MiKTeX for M0/M5).\n"

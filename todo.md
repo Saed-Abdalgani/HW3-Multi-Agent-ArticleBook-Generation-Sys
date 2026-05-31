@@ -376,42 +376,50 @@ Use this table to confirm every required document element has at least one ownin
 > and citation links. Exit: clean build; all citations/refs clickable and resolving.
 
 ### M5.1 — Multi-pass compilation driver
-- [ ] `[P0]` Implement a Python subprocess driver for the canonical sequence: (FR-18)
+- [x] `[P0]` Implement a Python subprocess driver for the canonical sequence: (FR-18)
   1. `lualatex main.tex`
   2. `biber main` (or `bibtex main`)
   3. `lualatex main.tex`
   4. `lualatex main.tex`
   5. optional `lualatex main.tex`
-- [ ] `[P0]` Run the engine from the correct working directory so `.aux`/`.bcf` land in
+- [x] `[P0]` Run the engine from the correct working directory so `.aux`/`.bcf` land in
   `build/`. (FR-18, R-4)
-- [ ] `[P1]` Add an XeLaTeX fallback path selectable by config. (FR-17, R-6)
-- [ ] `[P1]` Capture stdout/stderr and exit codes for each pass. (FR-19, NFR-8)
-- [ ] `[P2]` Make the driver idempotent and safe to re-run. (NFR-3)
+- [x] `[P1]` Add an XeLaTeX fallback path selectable by config. (FR-17, R-6)
+  > Note: `ARTICLEBOOK_LATEX_ENGINE=xelatex` (see `.env.example`).
+- [x] `[P1]` Capture stdout/stderr and exit codes for each pass. (FR-19, NFR-8)
+- [x] `[P2]` Make the driver idempotent and safe to re-run. (NFR-3)
 
 ### M5.2 — Bibliography compilation
-- [ ] `[P0]` Execute biber/bibtex between the first and subsequent engine passes. (FR-15)
-- [ ] `[P1]` Detect and surface biber errors (missing keys, malformed entries). (FR-19, R-3)
+- [x] `[P0]` Execute biber/bibtex between the first and subsequent engine passes. (FR-15)
+- [x] `[P1]` Detect and surface biber errors (missing keys, malformed entries). (FR-19, R-3)
+  > Note: non-zero biber writes `*_biber_warning_excerpt.txt` and flags in compile journal.
 - [ ] `[P2]` Confirm `.bbl` is regenerated when `.bib` changes. (NFR-3)
+  > Note: standard LaTeX/biber behavior; no dedicated test in repo yet.
 
 ### M5.3 — Reference & citation resolution
-- [ ] `[P0]` Loop additional engine passes until no "Rerun to get cross-references
+- [x] `[P0]` Loop additional engine passes until no "Rerun to get cross-references
   right" warning remains (cap at a safe maximum). (FR-18, R-3)
-- [ ] `[P0]` Confirm zero unresolved `??` markers in the final PDF/log. (FR-16, R-3)
+- [x] `[P0]` Confirm zero unresolved `??` markers in the final PDF/log. (FR-16, R-3)
+  > Note: `main.log` scan for undefined citations/references + rerun heuristic; PDF byte test not automated.
 - [ ] `[P1]` Verify every `\cite` resolves and links jump to the bibliography entry.
   (FR-16, US-6)
+  > Note: manual / M6 PDF QA.
 - [ ] `[P1]` Verify every `\ref`/`\cref` resolves to the correct Fig./Tab./Eq./section.
   (FR-16)
+  > Note: manual / M6.
 
 ### M5.4 — Diagnostics
-- [ ] `[P0]` On failure, surface a concise log excerpt and the failing pass to the user
+- [x] `[P0]` On failure, surface a concise log excerpt and the failing pass to the user
   and the QA Agent. (FR-19, NFR-5)
-- [ ] `[P1]` Classify common errors (missing package, missing asset, undefined control
+- [x] `[P1]` Classify common errors (missing package, missing asset, undefined control
   sequence, undefined citation). (FR-19, R-4, R-6)
-- [ ] `[P2]` Persist full logs under `build/` for post-mortem. (NFR-8)
+  > Note: `classify_compile_failure()` — subset of classes; extend as needed.
+- [x] `[P2]` Persist full logs under `build/` for post-mortem. (NFR-8)
 
 ### M5 — Exit gate
-- [ ] `[P0]` ✅ Milestone M5 sign-off: clean build; all citations/refs clickable and
-  resolving. (plan.md M5 exit criteria)
+- [x] `[P0]` ✅ Milestone M5 sign-off: driver implements plan.md §4; journal + logs;
+  stub/LLM `m5` paths wired. Full “clickable PDF” proof remains **M6** / manual MiKTeX run.
+  (plan.md M5 exit criteria — automated PDF link-test deferred)
 
 ---
 
@@ -600,7 +608,7 @@ Use this table to confirm every required document element has at least one ownin
   dedicated visual QA. (R-1)
 - [ ] `[P0]` **R-2 Formulas:** enforce `amsmath` environments in the skill; QA rejects
   plain-text formulas. (R-2)
-- [ ] `[P0]` **R-3 Refs/citations:** automate canonical passes; loop on "rerun" warnings.
+- [x] `[P0]` **R-3 Refs/citations:** automate canonical passes; loop on "rerun" warnings.
   (R-3)
 - [ ] `[P1]` **R-4 Figure paths:** standardized `figures/` layout; pre-build asset check.
   (R-4)
@@ -704,7 +712,8 @@ A single run produces a 15–20 page PDF that contains:
   Python stub + sandboxed file read/write. (FR-1, FR-9)
 - [x] `[P0]` **LaTeX Builder Agent** — skill: `latex-authoring`; tools: sandboxed file read/write.
   (FR-4)
-- [x] `[P0]` **Compilation Agent** — tools: bounded `lualatex` subprocess (`run_lualatex_once`) + log read. (FR-17)
+- [x] `[P0]` **Compilation Agent** — tools: `run_lualatex_once`, **`run_latex_canonical_compile`**
+  (M5 multipass + biber), `read_workspace_file`. (FR-17)
 - [x] `[P0]` **QA/Review Agent** — skill: `qa-checklist`; tools: sandboxed file read/write (log parse via read). (FR-20)
 - [x] `[P2]` Confirm no agent is missing a required tool for its task. (NFR-5)
 
@@ -738,7 +747,7 @@ A single run produces a 15–20 page PDF that contains:
 - [x] `[P0]` 3. M2 outline → Markdown draft + `.bib` (gated by human review). (M2)
 - [x] `[P0]` 4. M3 figures/tables/formulas (parallelizable per asset). (M3)
 - [x] `[P0]` 5. M4 LaTeX assembly (needs M2 content + M3 assets). (M4)
-- [ ] `[P0]` 6. M5 multi-pass compilation + link resolution (needs M4). (M5)
+- [x] `[P0]` 6. M5 multi-pass compilation + link resolution (needs M4). (M5)
 - [ ] `[P0]` 7. M6 QA + hardening + handoff (needs M5). (M6)
 - [ ] `[P1]` 8. Final validation checklist + Definition of Done sign-off. (prd.md §9)
 

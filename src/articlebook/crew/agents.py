@@ -7,6 +7,7 @@ from crewai import LLM, Agent
 from articlebook.crew.workspace_tools import (
     assemble_latex_document,
     read_workspace_file,
+    run_latex_canonical_compile,
     run_lualatex_once,
     run_m3_asset_generators,
     run_matplotlib_stub,
@@ -24,7 +25,7 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
     """Create ordered agents for M1/M2/M3 pipelines (skills + sandboxed tools)."""
     read_write = [write_workspace_file, read_workspace_file]
     figure_tools = read_write + [run_matplotlib_stub, run_m3_asset_generators, run_lualatex_once]
-    compile_tools = [run_lualatex_once, read_workspace_file]
+    compile_tools = [run_lualatex_once, run_latex_canonical_compile, read_workspace_file]
     qa_tools = read_write + [verify_m3_assets]
 
     return {
@@ -84,8 +85,14 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
         ),
         "compile": Agent(
             role="Compilation operator",
-            goal="Run a single LuaLaTeX smoke pass and capture logs under build/.",
-            backstory="You treat logs as first-class artifacts for downstream QA.",
+            goal=(
+                "Run single-pass smoke when requested; otherwise execute the canonical "
+                "LuaLaTeX/XeLaTeX + biber multipass driver and capture logs under build/."
+            ),
+            backstory=(
+                "You treat logs as first-class artifacts: per-pass files plus a compile journal "
+                "JSON for QA (M5)."
+            ),
             tools=compile_tools,
             llm=llm,
             verbose=True,

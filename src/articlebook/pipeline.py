@@ -1,4 +1,4 @@
-"""High-level runners: stub vs LLM, milestones M1–M4."""
+"""High-level runners: stub vs LLM, milestones M1–M5."""
 
 from __future__ import annotations
 
@@ -8,12 +8,18 @@ from typing import Literal
 from articlebook.crew.crew_builder import build_crew
 from articlebook.crew.workspace_tools import bind_workspace_root, reset_workspace_root
 from articlebook.inputs import log_resolved_run_config, validate_topic_language
-from articlebook.pipeline_stubs import run_stub_m1, run_stub_m2, run_stub_m3, run_stub_m4
+from articlebook.pipeline_stubs import (
+    run_stub_m1,
+    run_stub_m2,
+    run_stub_m3,
+    run_stub_m4,
+    run_stub_m5,
+)
 from articlebook.shared.config import load_config
 from articlebook.shared.gatekeeper import create_llm
 from articlebook.shared.paths import project_root
 
-Milestone = Literal["m1", "m2", "m3", "m4"]
+Milestone = Literal["m1", "m2", "m3", "m4", "m5"]
 
 __all__ = [
     "Milestone",
@@ -22,11 +28,13 @@ __all__ = [
     "run_stub_m2",
     "run_stub_m3",
     "run_stub_m4",
+    "run_stub_m5",
     "run_llm",
     "run_llm_m1",
     "run_llm_m2",
     "run_llm_m3",
     "run_llm_m4",
+    "run_llm_m5",
 ]
 
 
@@ -36,7 +44,7 @@ def setup_logging(verbose: bool = False) -> None:
 
 
 def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
-    """Execute CrewAI crew (requires OPENAI_API_KEY). Milestone: m1 | m2 | m3 | m4."""
+    """Execute CrewAI crew (requires OPENAI_API_KEY). Milestone: m1 | m2 | m3 | m4 | m5."""
     inputs = validate_topic_language(topic, language)
     root = project_root()
     token = bind_workspace_root(root)
@@ -83,3 +91,8 @@ def run_llm_m3(topic: str, language: str) -> str:
 def run_llm_m4(topic: str, language: str) -> str:
     """M4 pipeline via LLM agents (M3 + LaTeX assembly + compile + QA)."""
     return run_llm(topic, language, milestone="m4")
+
+
+def run_llm_m5(topic: str, language: str) -> str:
+    """M5 pipeline via LLM agents (M4 + canonical multipass compile + QA)."""
+    return run_llm(topic, language, milestone="m5")
