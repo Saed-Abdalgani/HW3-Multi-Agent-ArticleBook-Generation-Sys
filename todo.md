@@ -194,43 +194,44 @@ Use this table to confirm every required document element has at least one ownin
 > including the BiDi chapter. Authoring is Markdown-first.
 
 ### M2.1 — Input handling
-- [ ] `[P0]` Accept and validate `topic` and `language` inputs from the entry point.
+- [x] `[P0]` Accept and validate `topic` and `language` inputs from the entry point.
   (FR-5, US-1)
-- [ ] `[P1]` Normalize language to a base direction (RTL for Hebrew, LTR otherwise). (FR-14)
-- [ ] `[P2]` Echo resolved run configuration to the log for traceability. (NFR-8)
+- [x] `[P1]` Normalize language to a base direction (RTL for Hebrew, LTR otherwise). (FR-14)
+- [x] `[P2]` Echo resolved run configuration to the log for traceability. (NFR-8)
 
 ### M2.2 — Outline & page budgeting
-- [ ] `[P0]` Generate a chapter/section outline sized for a 15–20 page target. (FR-7, FR-8)
-- [ ] `[P1]` Assign a per-chapter page/word budget to control final length. (FR-7, R-5)
+- [x] `[P0]` Generate a chapter/section outline sized for a 15–20 page target. (FR-7, FR-8)
+- [x] `[P1]` Assign a per-chapter page/word budget to control final length. (FR-7, R-5)
   > Note: Track cumulative budget so total stays within 15–20 pages.
-- [ ] `[P1]` Reserve one chapter explicitly as the **BiDi demonstration chapter**. (FR-13)
-- [ ] `[P2]` Persist the outline to `content/outline.md` for review. (US-2)
+- [x] `[P1]` Reserve one chapter explicitly as the **BiDi demonstration chapter**. (FR-13)
+- [x] `[P2]` Persist the outline to `content/outline.md` for review. (US-2)
 
 ### M2.3 — Markdown drafting
-- [ ] `[P0]` Draft each chapter as a separate file under `content/`. (FR-6, US-2)
-- [ ] `[P1]` Insert placeholders/anchors where figures, tables, and formulas will go.
+- [x] `[P0]` Draft each chapter as a separate file under `content/`. (FR-6, US-2)
+- [x] `[P1]` Insert placeholders/anchors where figures, tables, and formulas will go.
   (FR-9)
   > Note: Stable anchors let the LaTeX Builder wire assets without restructuring text.
-- [ ] `[P1]` Insert in-text citation markers tied to planned `.bib` keys. (FR-16)
-- [ ] `[P2]` Provide a human review gate on the Markdown before LaTeX conversion. (R-7, US-2)
+- [x] `[P1]` Insert in-text citation markers tied to planned `.bib` keys. (FR-16)
+- [x] `[P2]` Provide a human review gate on the Markdown before LaTeX conversion. (R-7, US-2)
 
 ### M2.4 — Research & bibliography sourcing
-- [ ] `[P0]` Collect credible sources for each chapter via the Research Agent. (FR-15)
-- [ ] `[P0]` Build `latex/references.bib` with valid BibTeX entries and stable keys.
+- [x] `[P0]` Collect credible sources for each chapter via the Research Agent. (FR-15)
+  > Note: LLM path uses the Research Agent; `--stub` emits a curated corpus aligned to keys.
+- [x] `[P0]` Build `latex/references.bib` with valid BibTeX entries and stable keys.
   (FR-15, FR-16)
-- [ ] `[P1]` Ensure every in-text citation marker has a matching `.bib` entry. (FR-16, R-3)
-- [ ] `[P1]` Flag and remove unverifiable/hallucinated sources. (R-7)
+- [x] `[P1]` Ensure every in-text citation marker has a matching `.bib` entry. (FR-16, R-3)
+- [x] `[P1]` Flag and remove unverifiable/hallucinated sources. (R-7)
   > Note: No orphan citations and no `.bib` entries without an in-text reference.
-- [ ] `[P2]` Normalize author/title/year fields for consistent rendering. (NFR-10)
+- [x] `[P2]` Normalize author/title/year fields for consistent rendering. (NFR-10)
 
 ### M2.5 — BiDi chapter content
-- [ ] `[P0]` Author the BiDi chapter mixing Hebrew (RTL) with English/technical terms
+- [x] `[P0]` Author the BiDi chapter mixing Hebrew (RTL) with English/technical terms
   (LTR islands). (FR-13, R-1)
-- [ ] `[P1]` Verify reading order of mixed runs is logically correct in the source. (FR-13)
-- [ ] `[P2]` Include at least one sentence with inline numerals/code to stress BiDi. (R-1)
+- [x] `[P1]` Verify reading order of mixed runs is logically correct in the source. (FR-13)
+- [x] `[P2]` Include at least one sentence with inline numerals/code to stress BiDi. (R-1)
 
 ### M2 — Exit gate
-- [ ] `[P0]` ✅ Milestone M2 sign-off: complete reviewable Markdown draft (15–20 page
+- [x] `[P0]` ✅ Milestone M2 sign-off: complete reviewable Markdown draft (15–20 page
   estimate) with `.bib` sources. (plan.md M2 exit criteria)
 
 ---
@@ -590,7 +591,7 @@ A single run produces a 15–20 page PDF that contains:
 
 - [x] `[P0]` 1. M0 toolchain + skeleton (blocks everything). (M0)
 - [x] `[P0]` 2. M1 skills + agents + crew wiring. (M1)
-- [ ] `[P0]` 3. M2 outline → Markdown draft + `.bib` (gated by human review). (M2)
+- [x] `[P0]` 3. M2 outline → Markdown draft + `.bib` (gated by human review). (M2)
 - [ ] `[P0]` 4. M3 figures/tables/formulas (parallelizable per asset). (M3)
 - [ ] `[P0]` 5. M4 LaTeX assembly (needs M2 content + M3 assets). (M4)
 - [ ] `[P0]` 6. M5 multi-pass compilation + link resolution (needs M4). (M5)

@@ -19,16 +19,23 @@ Copy `.env.example` to `.env` and set `OPENAI_API_KEY` (never commit `.env`).
 
 ## Usage
 
-**Offline stub pipeline** (writes M1 placeholder artifacts, runs Matplotlib stub, skips or smoke-runs LaTeX):
+**Offline stub — M2 content pipeline (default):** outline, six chapters (including BiDi), `references.bib`, research notes, review gate (no LLM, no LaTeX required):
 
 ```bash
 uv run articlebook --stub --topic "Your Topic" --language English
 ```
 
-**LLM crew (sequential M1 tasks)** — requires `OPENAI_API_KEY`:
+**Offline stub — M1 full smoke** (placeholder artifacts, Matplotlib stub, optional LuaLaTeX once):
+
+```bash
+uv run articlebook --stub --milestone m1 --topic "Your Topic" --language English
+```
+
+**LLM crew** — requires `OPENAI_API_KEY`. Default is **M2** (research → outline → chapters → QA). Use `--milestone m1` for the original full-stack crew:
 
 ```bash
 uv run articlebook --topic "Your Topic" --language Hebrew
+uv run articlebook --milestone m1 --topic "Your Topic" --language English
 ```
 
 Legacy entrypoint:
@@ -43,6 +50,7 @@ uv run python main.py --stub --topic "Your Topic" --language English
 - `skills/` — CrewAI `SKILL.md` packages (per-agent + `house-culture` at crew level)
 - `content/`, `figures/`, `scripts/`, `latex/`, `build/` — working tree for generated artifacts
 - `docs/PRD_m1_crew_and_skills.md` — mechanism PRD for milestone M1 wiring
+- `docs/PRD_m2_content_pipeline.md` — mechanism PRD for M2 content artifacts and CLI modes
 
 ## Development
 

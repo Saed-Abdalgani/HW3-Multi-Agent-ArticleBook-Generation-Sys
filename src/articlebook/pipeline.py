@@ -1,19 +1,24 @@
-"""High-level M1 runner: LLM crew vs deterministic stub."""
+"""High-level runners: stub vs LLM, milestones M1 (full) and M2 (content)."""
 
 from __future__ import annotations
 
 import logging
+from typing import Literal
 
-from articlebook.crew.crew_builder import build_m1_crew
+from articlebook.crew.crew_builder import build_crew
 from articlebook.crew.workspace_tools import (
     bind_workspace_root,
     compile_lualatex_once,
     reset_workspace_root,
     run_matplotlib_stub_script,
 )
+from articlebook.inputs import log_resolved_run_config, validate_topic_language
+from articlebook.m2_stub import write_m2_stub_artifacts
 from articlebook.shared.config import load_config
 from articlebook.shared.gatekeeper import create_llm
 from articlebook.shared.paths import project_root
+
+Milestone = Literal["m1", "m2"]
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -22,12 +27,16 @@ def setup_logging(verbose: bool = False) -> None:
 
 
 def run_stub_m1(topic: str, language: str) -> None:
-    """Deterministic placeholder pipeline (no LLM) for CI and offline verification."""
+    """Deterministic M1 placeholder pipeline (no LLM) for CI and smoke tests."""
+    inputs = validate_topic_language(topic, language)
     root = project_root()
+    log = logging.getLogger(__name__)
+    log_resolved_run_config(inputs, mode="stub", milestone="m1")
     token = bind_workspace_root(root)
     try:
         (root / "content" / "m1_research_notes.md").write_text(
-            f"# M1 research (stub)\nTopic: {topic}\nLanguage: {language}\n", encoding="utf-8"
+            f"# M1 research (stub)\nTopic: {inputs.topic}\nLanguage: {inputs.language}\n",
+            encoding="utf-8",
         )
         (root / "content" / "m1_outline.md").write_text(
             "# Outline (stub)\n- Ch1 intro (3p)\n- Ch2 BiDi demo (3p)\n", encoding="utf-8"
@@ -54,27 +63,60 @@ def run_stub_m1(topic: str, language: str) -> None:
             f"|lualatex log chars|{len(log_text)}|\n",
             encoding="utf-8",
         )
-        logging.getLogger(__name__).info("stub.m1 complete root=%s", root)
+        log.info("stub.m1 complete root=%s", root)
     finally:
         reset_workspace_root(token)
 
 
-def run_llm_m1(topic: str, language: str) -> str:
-    """Execute the CrewAI crew (requires OPENAI_API_KEY)."""
+def run_stub_m2(topic: str, language: str) -> None:
+    """Deterministic M2 content pipeline: outline, chapters, BiDi note, `.bib` (no compile)."""
+    inputs = validate_topic_language(topic, language)
+    root = project_root()
+    log = logging.getLogger(__name__)
+    log_resolved_run_config(inputs, mode="stub", milestone="m2")
+    token = bind_workspace_root(root)
+    try:
+        write_m2_stub_artifacts(root, inputs)
+        log.info("stub.m2 complete root=%s", root)
+    finally:
+        reset_workspace_root(token)
+
+
+def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
+    """Execute CrewAI crew (requires OPENAI_API_KEY). Default milestone is M2 content pipeline."""
+    inputs = validate_topic_language(topic, language)
     root = project_root()
     token = bind_workspace_root(root)
     log = logging.getLogger(__name__)
     try:
         cfg = load_config()
         llm = create_llm(cfg)
+        log_resolved_run_config(inputs, mode="llm", milestone=milestone)
 
         def _task_cb(output: object) -> None:
             log.info("crew.task.done snippet=%s", str(output)[:400].replace("\n", " "))
 
-        crew = build_m1_crew(llm, topic, language, task_callback=_task_cb)
-        log.info("crew.kickoff.start topic=%s language=%s", topic, language)
-        result = crew.kickoff(inputs={"topic": topic, "language": language})
+        crew = build_crew(
+            llm, inputs.topic, inputs.language, milestone=milestone, task_callback=_task_cb
+        )
+        log.info(
+            "crew.kickoff.start topic=%s language=%s milestone=%s",
+            topic,
+            language,
+            milestone,
+        )
+        result = crew.kickoff(inputs={"topic": inputs.topic, "language": inputs.language})
         log.info("crew.kickoff.done")
         return str(result)
     finally:
         reset_workspace_root(token)
+
+
+def run_llm_m1(topic: str, language: str) -> str:
+    """Backward-compatible entry: full M1 crew."""
+    return run_llm(topic, language, milestone="m1")
+
+
+def run_llm_m2(topic: str, language: str) -> str:
+    """M2 content pipeline via LLM agents."""
+    return run_llm(topic, language, milestone="m2")

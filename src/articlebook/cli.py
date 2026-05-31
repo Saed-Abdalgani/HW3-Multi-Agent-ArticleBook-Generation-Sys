@@ -1,16 +1,18 @@
-"""Thin CLI entrypoint for milestone M1."""
+"""Thin CLI entrypoint for milestones M1 (full) and M2 (content pipeline)."""
 
 from __future__ import annotations
 
 import argparse
 import logging
 
-from articlebook.pipeline import run_llm_m1, run_stub_m1, setup_logging
+from articlebook.pipeline import run_llm, run_stub_m1, run_stub_m2, setup_logging
 from articlebook.shared.config import load_config_optional
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Multi-agent article/book generation (M1 crew).")
+    parser = argparse.ArgumentParser(
+        description="Multi-agent article/book generation (CrewAI + LaTeX, HW3)."
+    )
     parser.add_argument("--topic", required=True, help="Document topic")
     parser.add_argument(
         "--language",
@@ -18,9 +20,15 @@ def main() -> None:
         help="Primary language (e.g., English or Hebrew)",
     )
     parser.add_argument(
+        "--milestone",
+        choices=("m1", "m2"),
+        default="m2",
+        help="m1=full smoke crew; m2=content pipeline (outline, chapters, .bib). Default: m2.",
+    )
+    parser.add_argument(
         "--stub",
         action="store_true",
-        help="Offline deterministic run (no LLM) that still emits M1 placeholder artifacts.",
+        help="Offline deterministic run (no LLM). Milestone selects stub profile.",
     )
     parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
     args = parser.parse_args()
@@ -29,17 +37,31 @@ def main() -> None:
     log = logging.getLogger(__name__)
 
     if args.stub:
-        log.info("mode=stub topic=%s language=%s", args.topic, args.language)
-        run_stub_m1(args.topic, args.language)
-        print("M1 stub pipeline completed.")
+        log.info(
+            "mode=stub milestone=%s topic=%s language=%s",
+            args.milestone,
+            args.topic,
+            args.language,
+        )
+        if args.milestone == "m1":
+            run_stub_m1(args.topic, args.language)
+            print("M1 stub pipeline completed.")
+        else:
+            run_stub_m2(args.topic, args.language)
+            print("M2 stub content pipeline completed.")
         return
 
     if load_config_optional() is None:
         raise SystemExit(
             "OPENAI_API_KEY is not set. Export it or pass --stub for offline placeholders."
         )
-    log.info("mode=llm topic=%s language=%s", args.topic, args.language)
-    result = run_llm_m1(args.topic, args.language)
+    log.info(
+        "mode=llm milestone=%s topic=%s language=%s",
+        args.milestone,
+        args.topic,
+        args.language,
+    )
+    result = run_llm(args.topic, args.language, milestone=args.milestone)
     print(result)
 
 

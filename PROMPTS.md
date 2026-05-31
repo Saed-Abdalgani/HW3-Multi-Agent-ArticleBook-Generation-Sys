@@ -6,7 +6,7 @@
 
 | Field | Value |
 |-------|-------|
-| Version | 3.04 |
+| Version | 3.05 |
 | Updated | 2026-05-31 |
 | Related docs | [README.md](README.md), [prd.md](prd.md), [plan.md](plan.md), [todo.md](todo.md) |
 
@@ -29,7 +29,7 @@ This document records significant AI-assisted development interactions: context,
 - **Dependencies:** Declared in [pyproject.toml](pyproject.toml); lock with [uv.lock](uv.lock) via `uv lock`. [requirements.txt](requirements.txt) is a pointer only.
 - **Reproducibility notes:** [versions.txt](versions.txt) is referenced in [todo.md](todo.md) for recording installed tool versions.
 - **Repo layout (present):** `src/articlebook/` package, `skills/`, `content/`, `figures/`, `scripts/`, `latex/` (with `chapters/`), `build/` (compile output); placeholders via `.gitkeep` where empty.
-- **Current implementation status:** **M1** — CrewAI sequential crew, skills, workspace tools, `--stub` deterministic pipeline, tests (`tests/`), and `docs/PRD_m1_crew_and_skills.md`. **M2–M6** remain per [todo.md](todo.md).
+- **Current implementation status:** **M1** — CrewAI sequential crew, skills, workspace tools, `--stub` M1 smoke, tests. **M2** — validated `topic`/`language`, default `--stub` + default LLM crew emit `content/outline.md`, `content/chapter_*.md`, BiDi chapter, `latex/references.bib`, `REVIEW_GATE.md`; see [docs/PRD_m2_content_pipeline.md](docs/PRD_m2_content_pipeline.md). **M3–M6** remain per [todo.md](todo.md).
 
 ---
 
@@ -291,6 +291,25 @@ Earlier homework used this file as a **long** step-by-step log (neural signal ex
 **Lessons learned:**
 
 - Bind filesystem tools to an explicit root and **whitelist** reads when exposing repo-level docs to agents.
+
+---
+
+### 2026-05-31 — Milestone M2 (content pipeline)
+
+**Goal:** Implement `plan.md` / `todo.md` Phase M2 — outline with page budgets, multi-file Markdown, BiDi chapter, `.bib`, validated inputs.
+
+**Changes (summary):**
+
+- `articlebook.inputs` — `RunInputs`, `validate_topic_language`, `normalize_text_direction`, structured run logging.
+- `articlebook.m2_stub` — deterministic `content/` + `latex/references.bib` + `build/m2_stub_manifest.md`.
+- `articlebook.pipeline` — `run_stub_m2`, `run_llm(..., milestone=)`, retained `run_stub_m1` / `run_llm_m1`.
+- `crew.tasks.build_m2_tasks`, `crew_builder.build_crew` / `build_m2_crew`; CLI `--milestone {m1,m2}` (default **m2**).
+- Docs: `docs/PRD_m2_content_pipeline.md`, README usage, `todo.md` / `SYSTEM_PROMPT.md` / `PROMPTS.md` updates.
+
+**Key decisions:**
+
+- **Default milestone m2** for new runs; M1 retained for regression and full smoke.
+- **M2 LLM crew is truncated** (4 agents) so milestone scope stays content-only; compile returns in M1 or later milestones.
 
 ---
 
