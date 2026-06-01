@@ -14,6 +14,7 @@ from articlebook.m4_manifest import (
     write_m6_stub_manifest,
 )
 from articlebook.m6_qa import run_m6_contract_qa
+from articlebook.pipeline_stub_dry import skip_stub_disk_writes
 from articlebook.pipeline_stub_latex import stub_latex_through_m5_driver, write_m3_figure_manifest
 from articlebook.pipeline_stub_m1 import run_stub_m1
 from articlebook.shared.paths import project_root
@@ -25,6 +26,8 @@ def run_stub_m2(topic: str, language: str) -> None:
     root = project_root()
     log = logging.getLogger(__name__)
     log_resolved_run_config(inputs, mode="stub", milestone="m2")
+    if skip_stub_disk_writes(log, "m2"):
+        return
     token = bind_workspace_root(root)
     try:
         write_m2_stub_artifacts(root, inputs)
@@ -39,6 +42,8 @@ def run_stub_m3(topic: str, language: str) -> None:
     root = project_root()
     log = logging.getLogger(__name__)
     log_resolved_run_config(inputs, mode="stub", milestone="m3")
+    if skip_stub_disk_writes(log, "m3"):
+        return
     token = bind_workspace_root(root)
     try:
         write_m2_stub_artifacts(root, inputs)
@@ -57,6 +62,8 @@ def run_stub_m4(topic: str, language: str) -> None:
     root = project_root()
     log = logging.getLogger(__name__)
     log_resolved_run_config(inputs, mode="stub", milestone="m4")
+    if skip_stub_disk_writes(log, "m4"):
+        return
     token = bind_workspace_root(root)
     try:
         stub_latex_through_m5_driver(
@@ -73,6 +80,8 @@ def run_stub_m5(topic: str, language: str) -> None:
     root = project_root()
     log = logging.getLogger(__name__)
     log_resolved_run_config(inputs, mode="stub", milestone="m5")
+    if skip_stub_disk_writes(log, "m5"):
+        return
     token = bind_workspace_root(root)
     try:
         stub_latex_through_m5_driver(
@@ -89,6 +98,8 @@ def run_stub_m6(topic: str, language: str, *, allow_missing_pdf: bool = False) -
     root = project_root()
     log = logging.getLogger(__name__)
     log_resolved_run_config(inputs, mode="stub", milestone="m6")
+    if skip_stub_disk_writes(log, "m6"):
+        return True
     token = bind_workspace_root(root)
     try:
         stub_latex_through_m5_driver(

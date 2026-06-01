@@ -520,30 +520,30 @@ Use this table to confirm every required document element has at least one ownin
 > Related: `plan.md` §10.3, §11.
 
 ### M8.1 — Input / output guards
-- [ ] `[P0]` Add `src/articlebook/shared/security.py` with input sanitization beyond length:
+- [x] `[P0]` Add `src/articlebook/shared/security.py` with input sanitization beyond length:
   control-char + simple **prompt-injection heuristics** on `topic`. (R-7, R-10)
-- [ ] `[P1]` Treat file content fed into context as untrusted; add a trust/redaction note
+- [x] `[P1]` Treat file content fed into context as untrusted; add a trust/redaction note
   to mitigate prompt injection & memory poisoning via files. (R-7)
-- [ ] `[P1]` Add **denylist** for risky content patterns surfaced to tools. (security)
+- [x] `[P1]` Add **denylist** for risky content patterns surfaced to tools. (security)
 
 ### M8.2 — Safe file writes (sandbox hardening)
-- [ ] `[P0]` Add an **overwrite dry-run guard** to `write_workspace_file` (no silent
+- [x] `[P0]` Add an **overwrite dry-run guard** to `write_workspace_file` (no silent
   clobber of human-reviewed Markdown). (R-7, NFR-8)
-- [ ] `[P1]` Add `--dry-run` CLI flag (plan writes without performing them). (US-1)
+- [x] `[P1]` Add `--dry-run` CLI flag (plan writes without performing them). (US-1)
 
 ### M8.3 — Human-approval gate
-- [ ] `[P0]` Require explicit confirmation before the **paid LLM path**; `--yes` bypasses
+- [x] `[P0]` Require explicit confirmation before the **paid LLM path**; `--yes` bypasses
   for automation/CI. (R-10, cost)
-- [ ] `[P1]` Confirm before overwriting existing `content/`/`latex/` artifacts. (R-7)
+- [x] `[P1]` Confirm before overwriting existing `content/`/`latex/` artifacts. (R-7)
 
 ### M8.4 — Security-review skill & red-team tests
-- [ ] `[P1]` Author `skills/security-review/SKILL.md` (validation rules, allowlist/denylist,
+- [x] `[P1]` Author `skills/security-review/SKILL.md` (validation rules, allowlist/denylist,
   permission boundaries, approval gates). (FR-20)
-- [ ] `[P1]` Red-team tests: injection-via-topic rejected, path traversal blocked,
+- [x] `[P1]` Red-team tests: injection-via-topic rejected, path traversal blocked,
   poisoned content file handled, dry-run blocks overwrite. (testing, R-7)
 
 ### M8 — Exit gate
-- [ ] `[P0]` ✅ Milestone M8 sign-off: guards + approval gate enforced by default;
+- [x] `[P0]` ✅ Milestone M8 sign-off: guards + approval gate enforced by default;
   red-team tests pass. (plan.md §11 M8)
 
 ---

@@ -67,5 +67,6 @@ def test_discover_skills_names() -> None:
         "research-methodology",
         "document-structure",
         "house-culture",
+        "security-review",
     ):
         assert expected in names

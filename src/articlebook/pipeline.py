@@ -20,6 +20,10 @@ from articlebook.shared.config import load_config, write_resolved_run_stamp
 from articlebook.shared.gatekeeper import create_llm
 from articlebook.shared.output_validate import validate_agent_text_output_lenient
 from articlebook.shared.paths import project_root
+from articlebook.shared.security_context import (
+    reset_allow_workspace_overwrites,
+    set_allow_workspace_overwrites,
+)
 
 Milestone = Literal["m1", "m2", "m3", "m4", "m5", "m6"]
 
@@ -52,6 +56,7 @@ def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
     inputs = validate_topic_language(topic, language)
     root = project_root()
     token = bind_workspace_root(root)
+    owr_tok = set_allow_workspace_overwrites(True)
     log = logging.getLogger(__name__)
     try:
         cfg = load_config()
@@ -90,6 +95,7 @@ def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
             log.info("crew.llm.token_usage_summary=%s", usage_fn())
         return str(result)
     finally:
+        reset_allow_workspace_overwrites(owr_tok)
         reset_workspace_root(token)
 
 

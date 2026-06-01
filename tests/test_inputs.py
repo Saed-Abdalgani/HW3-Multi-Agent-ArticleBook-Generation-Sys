@@ -31,3 +31,8 @@ def test_validate_rejects_newline_in_topic() -> None:
 def test_validate_rejects_newline_in_language() -> None:
     with pytest.raises(ValueError, match="language"):
         validate_topic_language("OK", "bad\nlang")
+
+
+def test_validate_rejects_prompt_injection_topic() -> None:
+    with pytest.raises(ValueError, match="security heuristics"):
+        validate_topic_language("Topic about jailbreak override safety please", "English")

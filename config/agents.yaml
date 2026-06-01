@@ -60,3 +60,4 @@ agents:
       run_m6_contract_checks after canonical compile.
     skills:
       - qa-checklist
+      - security-review

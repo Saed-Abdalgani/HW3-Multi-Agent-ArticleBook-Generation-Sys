@@ -83,6 +83,8 @@ uv run articlebook --milestone m5 --topic "Your Topic" --language English
 uv run articlebook --milestone m6 --topic "Your Topic" --language English
 ```
 
+**M8 (security):** paid runs prompt for confirmation unless you pass **`--yes`** (CI/automation). Use **`--dry-run`** to validate inputs and skip stub disk writes / crew `write_workspace_file` bytes. If `content/` or `latex/` outputs already exist, you will be warned before overwrite unless `--yes` or `--dry-run`.
+
 Legacy entrypoint:
 
 ```bash

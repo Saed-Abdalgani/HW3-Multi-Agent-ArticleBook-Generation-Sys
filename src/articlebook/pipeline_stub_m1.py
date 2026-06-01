@@ -12,6 +12,7 @@ from articlebook.crew.workspace_tools import (
 )
 from articlebook.inputs import log_resolved_run_config, validate_topic_language
 from articlebook.shared.paths import project_root
+from articlebook.shared.security_context import dry_run_active
 
 
 def run_stub_m1(topic: str, language: str) -> None:
@@ -20,6 +21,9 @@ def run_stub_m1(topic: str, language: str) -> None:
     root = project_root()
     log = logging.getLogger(__name__)
     log_resolved_run_config(inputs, mode="stub", milestone="m1")
+    if dry_run_active():
+        log.info("stub.m1 dry-run: skipping disk writes")
+        return
     token = bind_workspace_root(root)
     try:
         (root / "content" / "m1_research_notes.md").write_text(

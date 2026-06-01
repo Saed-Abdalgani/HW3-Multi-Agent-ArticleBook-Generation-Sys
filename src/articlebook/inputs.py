@@ -6,6 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import Literal
 
+from articlebook.shared.security_heuristics import assert_topic_and_language_safe
+
 log = logging.getLogger(__name__)
 
 TextDirection = Literal["rtl", "ltr"]
@@ -48,6 +50,7 @@ def validate_topic_language(topic: str, language: str) -> RunInputs:
         raise ValueError("language must not contain newlines or NUL characters.")
     if any(c in _DISALLOWED_IN_TOPIC for c in t):
         raise ValueError("topic must not contain newlines or NUL characters.")
+    assert_topic_and_language_safe(t, lang)
     direction = normalize_text_direction(lang)
     return RunInputs(topic=t, language=lang, text_direction=direction)
 

@@ -37,5 +37,6 @@ def test_read_whitelisted_root_docs() -> None:
     try:
         text = read_workspace_file.run(relative_path="plan.md")  # type: ignore[attr-defined]
         assert "Phase M1" in text or "M1" in text
+        assert "untrusted" in text.lower()
     finally:
         reset_workspace_root(token)
