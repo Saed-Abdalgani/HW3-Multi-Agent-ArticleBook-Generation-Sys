@@ -1,0 +1,13 @@
+# M7 — optional task description / expected_output overrides per milestone.
+# Keys under `overrides.<milestone>.<task_id>` replace the built-in Python strings.
+# Built-in definitions remain in `src/articlebook/crew/tasks_*.py` when a key is absent.
+version: "1"
+
+# Example (uncomment to override M2 research task):
+# overrides:
+#   m2:
+#     research:
+#       description: "Topic: {topic}\nLanguage: {language}\nCustom research brief..."
+#       expected_output: "Custom expected output."
+
+overrides: {}

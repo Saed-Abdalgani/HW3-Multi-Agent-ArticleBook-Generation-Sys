@@ -3,22 +3,24 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, Literal
+from typing import Any
 
 from crewai import LLM, Crew, Process
 
 from articlebook.crew.agents import build_agents
-from articlebook.crew.tasks import (
-    build_m1_tasks,
-    build_m2_tasks,
-    build_m3_tasks,
-    build_m4_tasks,
-    build_m5_tasks,
-    build_m6_tasks,
-)
+from articlebook.crew.crew_milestone_dispatch import Milestone, milestone_plan, ordered_agents
 from articlebook.shared.paths import skills_root
 
-Milestone = Literal["m1", "m2", "m3", "m4", "m5", "m6"]
+__all__ = [
+    "Milestone",
+    "build_m1_crew",
+    "build_m2_crew",
+    "build_m3_crew",
+    "build_m4_crew",
+    "build_m5_crew",
+    "build_m6_crew",
+    "build_crew",
+]
 
 
 def build_m1_crew(
@@ -97,70 +99,11 @@ def build_crew(
 ) -> Crew:
     """Create the sequential crew with crew-level house culture plus per-agent skills."""
     agents = build_agents(llm)
-    if milestone == "m1":
-        tasks = build_m1_tasks(agents, topic, language)
-        ordered_agents = [
-            agents["research"],
-            agents["architect"],
-            agents["writer"],
-            agents["figure"],
-            agents["latex"],
-            agents["compile"],
-            agents["qa"],
-        ]
-    elif milestone == "m5":
-        tasks = build_m5_tasks(agents, topic, language)
-        ordered_agents = [
-            agents["research"],
-            agents["architect"],
-            agents["writer"],
-            agents["figure"],
-            agents["latex"],
-            agents["compile"],
-            agents["qa"],
-        ]
-    elif milestone == "m6":
-        tasks = build_m6_tasks(agents, topic, language)
-        ordered_agents = [
-            agents["research"],
-            agents["architect"],
-            agents["writer"],
-            agents["figure"],
-            agents["latex"],
-            agents["compile"],
-            agents["qa"],
-        ]
-    elif milestone == "m4":
-        tasks = build_m4_tasks(agents, topic, language)
-        ordered_agents = [
-            agents["research"],
-            agents["architect"],
-            agents["writer"],
-            agents["figure"],
-            agents["latex"],
-            agents["compile"],
-            agents["qa"],
-        ]
-    elif milestone == "m3":
-        tasks = build_m3_tasks(agents, topic, language)
-        ordered_agents = [
-            agents["research"],
-            agents["architect"],
-            agents["writer"],
-            agents["figure"],
-            agents["qa"],
-        ]
-    else:
-        tasks = build_m2_tasks(agents, topic, language)
-        ordered_agents = [
-            agents["research"],
-            agents["architect"],
-            agents["writer"],
-            agents["qa"],
-        ]
+    keys, build_tasks = milestone_plan(milestone)
+    task_list = build_tasks(agents, topic, language)
     payload: dict[str, object] = {
-        "agents": ordered_agents,
-        "tasks": tasks,
+        "agents": ordered_agents(agents, keys),
+        "tasks": task_list,
         "process": Process.sequential,
         "verbose": True,
         "memory": False,

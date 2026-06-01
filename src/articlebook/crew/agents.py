@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from crewai import LLM, Agent
 
+from articlebook.crew.agent_factory import build_agent
 from articlebook.crew.workspace_tools import (
     assemble_latex_document,
     read_workspace_file,
@@ -15,11 +16,6 @@ from articlebook.crew.workspace_tools import (
     verify_m3_assets,
     write_workspace_file,
 )
-from articlebook.shared.paths import skills_root
-
-
-def _skill(folder: str) -> str:
-    return str(skills_root() / folder)
 
 
 def build_agents(llm: LLM) -> dict[str, Agent]:
@@ -28,36 +24,37 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
     figure_tools = read_write + [run_matplotlib_stub, run_m3_asset_generators, run_lualatex_once]
     compile_tools = [run_lualatex_once, run_latex_canonical_compile, read_workspace_file]
     qa_tools = read_write + [verify_m3_assets, run_m6_contract_checks]
-
     return {
-        "research": Agent(
+        "research": build_agent(
+            llm,
+            "research",
             role="Research librarian",
             goal="Capture credible seed sources and constraints for the run topic.",
             backstory="You distrust uncited claims and prefer internal PRD/plan anchors.",
             tools=read_write,
-            llm=llm,
-            skills=[_skill("research-methodology")],
-            verbose=True,
+            skills=["research-methodology"],
         ),
-        "architect": Agent(
+        "architect": build_agent(
+            llm,
+            "architect",
             role="Outline architect",
             goal="Produce a chapter skeleton with page bands and asset hooks.",
             backstory="You translate fuzzy briefs into reviewable outlines.",
             tools=read_write,
-            llm=llm,
-            skills=[_skill("document-structure")],
-            verbose=True,
+            skills=["document-structure"],
         ),
-        "writer": Agent(
+        "writer": build_agent(
+            llm,
+            "writer",
             role="Markdown writer",
             goal="Draft placeholder chapter text with anchors for assets and citations.",
             backstory="You pair structure skills with BiDi-aware drafting when Hebrew appears.",
             tools=read_write,
-            llm=llm,
-            skills=[_skill("technical-writing"), _skill("bidi-hebrew")],
-            verbose=True,
+            skills=["technical-writing", "bidi-hebrew"],
         ),
-        "figure": Agent(
+        "figure": build_agent(
+            llm,
+            "figure",
             role="Figure and graph specialist",
             goal="Execute whitelisted Matplotlib scripts and record figure metadata.",
             backstory=(
@@ -65,11 +62,11 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
                 "plot_stub_m1.py (M1), make_graph.py + make_image.py (M3)."
             ),
             tools=figure_tools,
-            llm=llm,
-            skills=[_skill("figure-generation")],
-            verbose=True,
+            skills=["figure-generation"],
         ),
-        "latex": Agent(
+        "latex": build_agent(
+            llm,
+            "latex",
             role="LaTeX builder",
             goal=(
                 "Convert Markdown to .tex, assemble main.tex, "
@@ -80,11 +77,11 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
                 "using the assembly tool."
             ),
             tools=read_write + [assemble_latex_document],
-            llm=llm,
-            skills=[_skill("latex-authoring")],
-            verbose=True,
+            skills=["latex-authoring"],
         ),
-        "compile": Agent(
+        "compile": build_agent(
+            llm,
+            "compile",
             role="Compilation operator",
             goal=(
                 "Run single-pass smoke when requested; otherwise execute the canonical "
@@ -95,10 +92,11 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
                 "JSON for QA (M5)."
             ),
             tools=compile_tools,
-            llm=llm,
-            verbose=True,
+            skills=["compilation"],
         ),
-        "qa": Agent(
+        "qa": build_agent(
+            llm,
+            "qa",
             role="QA reviewer",
             goal=(
                 "Summarize artifact coverage, compile health, "
@@ -109,8 +107,6 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
                 "for M6 call run_m6_contract_checks after canonical compile."
             ),
             tools=qa_tools,
-            llm=llm,
-            skills=[_skill("qa-checklist")],
-            verbose=True,
+            skills=["qa-checklist"],
         ),
     }

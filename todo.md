@@ -486,29 +486,30 @@ Use this table to confirm every required document element has at least one ownin
 > Related: `plan.md` §10.1, §10.2, §10.5, §11; ADR-004.
 
 ### M7.1 — Gatekeeper hardening (model call)
-- [ ] `[P0]` Wrap LLM calls with **retries + exponential backoff** and a **timeout**,
+- [x] `[P0]` Wrap LLM calls with **retries + exponential backoff** and a **timeout**,
   driven by config (not hardcoded). (NFR-5, R-10)
   > Note: Preserve `create_llm` signature; add wrapping around the call site.
-- [ ] `[P1]` Add optional **rate limit / backpressure** knobs in config. (NFR-5)
-- [ ] `[P1]` Capture **token usage, latency, and estimated cost** per call (no secrets). (NFR-8)
-- [ ] `[P1]` Add an **output-validation** helper for agent results before the next stage. (R-8)
-- [ ] `[P2]` Unit tests: retry-on-failure, timeout, cost capture (mocked LLM). (testing)
+- [x] `[P1]` Add optional **rate limit / backpressure** knobs in config. (NFR-5)
+- [x] `[P1]` Capture **token usage, latency, and estimated cost** per call (no secrets). (NFR-8)
+- [x] `[P1]` Add an **output-validation** helper for agent results before the next stage. (R-8)
+- [x] `[P2]` Unit tests: retry-on-failure, timeout, cost capture (mocked LLM). (testing)
 
 ### M7.2 — Configuration externalization & versioning
-- [ ] `[P0]` Create `config/models.yaml` (provider, model, temperature, seed, retries,
+- [x] `[P0]` Create `config/models.yaml` (provider, model, temperature, seed, retries,
   limits, `rag.enabled`) with `version` field; Python defaults remain fallback. (NFR-3)
-- [ ] `[P1]` Create `config/agents.yaml` (role/goal/backstory/skills/tools per agent). (NFR-1)
-- [ ] `[P1]` Create `config/tasks.yaml` (task `description` + `expected_output` registry). (NFR-1)
-- [ ] `[P1]` Load config in `shared/config.py`; add a `provider` field (OpenAI now; seam
+- [x] `[P1]` Create `config/agents.yaml` (role/goal/backstory/skills/tools per agent). (NFR-1)
+- [x] `[P1]` Create `config/tasks.yaml` (task `description` + `expected_output` registry). (NFR-1)
+- [x] `[P1]` Load config in `shared/config.py`; add a `provider` field (OpenAI now; seam
   for Ollama/HF later). (ADR-004)
-- [ ] `[P2]` Stamp resolved model/provider/seed into the run log + `versions.txt`. (NFR-3)
+- [x] `[P2]` Stamp resolved model/provider/seed into the run log + `versions.txt`. (NFR-3)
+  > Implemented: extended `log_resolved_run_config` + `build/resolved_run_config.json` (no unbounded `versions.txt` growth).
 
 ### M7.3 — Compilation skill
-- [ ] `[P1]` Author `skills/compilation/SKILL.md` (canonical pass sequence, biber, rerun
+- [x] `[P1]` Author `skills/compilation/SKILL.md` (canonical pass sequence, biber, rerun
   loop, error classes) and attach to the Compilation agent. (FR-18, FR-19)
 
 ### M7 — Exit gate
-- [ ] `[P0]` ✅ Milestone M7 sign-off: LLM calls retried/timed/costed; agents/tasks loadable
+- [x] `[P0]` ✅ Milestone M7 sign-off: LLM calls retried/timed/costed; agents/tasks loadable
   from config; `--stub` + CLI unchanged; new tests green. (plan.md §11 M7)
 
 ---
@@ -759,6 +760,7 @@ A single run produces a 15–20 page PDF that contains:
 - [x] `[P0]` 7. M6 QA + hardening + handoff (needs M5). (M6)
   > Deterministic contract (`m6_qa.py`, CLI `m6`, crew `run_m6_contract_checks`). Full DoD still needs manual BiDi PDF + MiKTeX run without `--m6-allow-missing-pdf`.
 - [ ] `[P1]` 8. Final validation checklist + Definition of Done sign-off. (prd.md §9)
+- [x] `[P2]` M7 production harness (YAML config + gatekeeper + compilation skill; plan.md §11 M7).
 
 > Note: Figure generation (M3) can start as soon as the outline (M2.2) defines where each
 > asset belongs, overlapping with drafting (M2.3) to shorten the critical path. (NFR-2)

@@ -52,13 +52,27 @@ def validate_topic_language(topic: str, language: str) -> RunInputs:
     return RunInputs(topic=t, language=lang, text_direction=direction)
 
 
-def log_resolved_run_config(inputs: RunInputs, *, mode: str, milestone: str) -> None:
+def log_resolved_run_config(
+    inputs: RunInputs,
+    *,
+    mode: str,
+    milestone: str,
+    provider: str | None = None,
+    model: str | None = None,
+    seed: int | None = None,
+    config_version: str | None = None,
+) -> None:
     """Echo resolved configuration for traceability (NFR-8)."""
     log.info(
-        "run.config mode=%s milestone=%s topic=%r language=%r text_direction=%s",
+        "run.config mode=%s milestone=%s topic=%r language=%r text_direction=%s "
+        "provider=%s model=%s seed=%s config_version=%s",
         mode,
         milestone,
         inputs.topic,
         inputs.language,
         inputs.text_direction,
+        provider,
+        model,
+        seed,
+        config_version,
     )

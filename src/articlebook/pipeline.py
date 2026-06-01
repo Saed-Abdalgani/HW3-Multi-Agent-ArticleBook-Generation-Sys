@@ -1,4 +1,4 @@
-"""High-level runners: stub vs LLM, milestones M1–M5."""
+"""High-level runners: stub vs LLM, milestones M1–M6."""
 
 from __future__ import annotations
 
@@ -16,8 +16,9 @@ from articlebook.pipeline_stubs import (
     run_stub_m5,
     run_stub_m6,
 )
-from articlebook.shared.config import load_config
+from articlebook.shared.config import load_config, write_resolved_run_stamp
 from articlebook.shared.gatekeeper import create_llm
+from articlebook.shared.output_validate import validate_agent_text_output_lenient
 from articlebook.shared.paths import project_root
 
 Milestone = Literal["m1", "m2", "m3", "m4", "m5", "m6"]
@@ -54,11 +55,24 @@ def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
     log = logging.getLogger(__name__)
     try:
         cfg = load_config()
+        write_resolved_run_stamp(cfg, milestone=milestone)
         llm = create_llm(cfg)
-        log_resolved_run_config(inputs, mode="llm", milestone=milestone)
+        log_resolved_run_config(
+            inputs,
+            mode="llm",
+            milestone=milestone,
+            provider=str(cfg.get("provider")),
+            model=str(cfg.get("model")),
+            seed=int(cfg.get("seed", 42)),
+            config_version=str(cfg.get("config_version", "")),
+        )
 
         def _task_cb(output: object) -> None:
-            log.info("crew.task.done snippet=%s", str(output)[:400].replace("\n", " "))
+            text = str(output)
+            snippet = text[:400].replace("\n", " ")
+            log.info("crew.task.done snippet=%s", snippet)
+            if validate_agent_text_output_lenient(text, stage="crew.task") is None:
+                log.warning("crew.task.output failed lenient validation (empty or invalid)")
 
         crew = build_crew(
             llm, inputs.topic, inputs.language, milestone=milestone, task_callback=_task_cb
@@ -71,6 +85,9 @@ def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
         )
         result = crew.kickoff(inputs={"topic": inputs.topic, "language": inputs.language})
         log.info("crew.kickoff.done")
+        usage_fn = getattr(llm, "get_token_usage_summary", None)
+        if callable(usage_fn):
+            log.info("crew.llm.token_usage_summary=%s", usage_fn())
         return str(result)
     finally:
         reset_workspace_root(token)

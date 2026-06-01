@@ -8,6 +8,7 @@ from crewai.tools import tool
 
 from articlebook.compile_multipass import compile_latex_canonical, compile_report_to_message
 from articlebook.crew.workspace_compile import compile_lualatex_once, run_matplotlib_stub_script
+from articlebook.crew.workspace_m6_reply import m6_contract_tool_reply
 from articlebook.crew.workspace_sandbox import (
     _ensure_under_root,
     _root,
@@ -121,19 +122,7 @@ def run_m6_contract_checks(reason: str = "qa", log_prefix: str = "m6_crew") -> s
     """M6: deterministic FR-20 / prd §9 checks; writes ``build/m6_qa_report.{md,json}``."""
     root = _root()
     report = run_m6_contract_qa(root, log_prefix=log_prefix)
-    status = "PASS" if report.passed else "FAIL"
-    head = f"M6 contract QA: **{status}** (prefix={log_prefix}).\n"
-    if report.errors:
-        head += "Errors:\n- " + "\n- ".join(report.errors[:25])
-        if len(report.errors) > 25:
-            head += f"\n- … ({len(report.errors) - 25} more)"
-        head += "\n"
-    if report.warnings:
-        head += "Warnings:\n- " + "\n- ".join(report.warnings[:15])
-        if len(report.warnings) > 15:
-            head += f"\n- … ({len(report.warnings) - 15} more)"
-    head += "\nSee `build/m6_qa_report.md`."
-    return head
+    return m6_contract_tool_reply(report, log_prefix)
 
 
 def workspace_tools() -> list:

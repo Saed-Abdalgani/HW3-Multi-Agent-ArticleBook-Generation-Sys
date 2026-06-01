@@ -6,8 +6,8 @@
 
 | Field | Value |
 |-------|-------|
-| Version | 3.07 |
-| Updated | 2026-05-31 |
+| Version | 3.08 |
+| Updated | 2026-06-01 |
 | Related docs | [README.md](README.md), [prd.md](prd.md), [plan.md](plan.md), [todo.md](todo.md) |
 
 ---
@@ -25,11 +25,11 @@ This document records significant AI-assisted development interactions: context,
 - **Skills:** Per-agent **CrewAI Skills** live under `skills/*/SKILL.md` (see [plan.md](plan.md) §1.3); **M1** delivered the tree plus a crew-level `house-culture` skill.
 - **Tools:** Sandboxed workspace tools in `articlebook.crew.workspace_tools` (writes under `content/`, `latex/`, `figures/`, `build/`, `scripts/`; reads selected root docs). Optional web search tools remain future work behind Gatekeeper.
 - **Toolchain:** **MiKTeX** on Windows; `compile_latex_canonical` prepends default user MiKTeX `bin` when engines are missing from `PATH`. **`ARTICLEBOOK_LATEX_ENGINE`** selects `lualatex` vs `xelatex`. Bibliography: **biber** between passes ([docs/PRD_m5_compile.md](docs/PRD_m5_compile.md)); QA contract expands in M6 ([prd.md](prd.md) FR-17–FR-20).
-- **Configuration:** `articlebook.shared.config` loads `.env` via `python-dotenv`; requires `OPENAI_API_KEY` for LLM runs, exposes `MODEL_NAME` (default `gpt-4-turbo`), `TEMPERATURE`, `SEED`. Optional `ARTICLEBOOK_LATEX_ENGINE`. See [.env.example](.env.example) (do not commit real secrets).
+- **Configuration:** `articlebook.shared.config` merges **`config/models.yaml`** with `.env` (`python-dotenv`): `OPENAI_API_KEY` for LLM runs, env overrides for `MODEL_NAME`, `TEMPERATURE`, `SEED`, `ARTICLEBOOK_LLM_PROVIDER`, `ARTICLEBOOK_LLM_TIMEOUT_S`, `ARTICLEBOOK_CONFIG_DIR`, gatekeeper knobs (`ARTICLEBOOK_GK_*`). **`config/agents.yaml`** / **`config/tasks.yaml`** overlay agent copy and M2 task prompts. See [.env.example](.env.example).
 - **Dependencies:** Declared in [pyproject.toml](pyproject.toml); lock with [uv.lock](uv.lock) via `uv lock`. [requirements.txt](requirements.txt) is a pointer only.
 - **Reproducibility notes:** [versions.txt](versions.txt) is referenced in [todo.md](todo.md) for recording installed tool versions.
 - **Repo layout (present):** `src/articlebook/` package, `skills/`, `content/`, `figures/`, `scripts/`, `latex/` (with `chapters/`), `build/` (compile output); placeholders via `.gitkeep` where empty.
-- **Current implementation status:** **M1–M5** — adds `latex_compile/` package (+ `compile_multipass.py` shim), tool `run_latex_canonical_compile`, stub **`m4`/`m5`** multipass after assembly, LLM **`m5`** crew (`tasks_m5.py`), journals under `build/`; see [docs/PRD_m5_compile.md](docs/PRD_m5_compile.md). **M6** (QA DoD, page count, PDF contract) remains per [todo.md](todo.md).
+- **Current implementation status:** **M1–M7** — M7 adds `InstrumentedLLM` (retries/backoff, timeout, optional min interval, per-call latency + token delta + rough cost), `config/*.yaml`, `build/resolved_run_config.json`, `skills/compilation`, M2 task YAML overrides; see [docs/PRD_m7_production_harness.md](docs/PRD_m7_production_harness.md). **M6** DoD (manual BiDi PDF, full PDF without `--m6-allow-missing-pdf`) and **M8–M9** remain per [todo.md](todo.md).
 
 ---
 
@@ -330,8 +330,27 @@ Earlier homework used this file as a **long** step-by-step log (neural signal ex
 
 ---
 
+### 2026-06-01 — Milestone M7 (Phase 7 — production harness, gatekeeper, YAML config)
+
+**Goal:** `plan.md` §11 / `todo.md` §M7 — externalize model + gatekeeper settings; wrap LLM calls with retries/backoff/timeout/rate-limit knobs; optional agent/task overlays; compilation skill; keep `--stub` + CLI stable.
+
+**Changes (summary):**
+
+- `config/models.yaml`, `config/agents.yaml`, `config/tasks.yaml` + `articlebook.shared.config_paths`, expanded `shared/config.py` (`load_models_document`, `write_resolved_run_stamp`).
+- `articlebook.shared.gatekeeper` — `InstrumentedLLM` subclass (transient-error retries + jitter, per-call latency + token-delta + rough USD estimate from YAML pricing table).
+- `articlebook.crew.agent_overrides`, `articlebook.crew.task_overrides`; `crew/agents.py` merges YAML; `tasks_m2.py` uses task overrides; `skills/compilation/SKILL.md`.
+- `pipeline.run_llm` — stamp `build/resolved_run_config.json`, richer `log_resolved_run_config`, lenient output validation in `task_callback`, post-kickoff `get_token_usage_summary` log.
+- Docs/tests: `docs/PRD_m7_production_harness.md`, `tests/test_m7_gatekeeper_policy.py`, `tests/test_m7_config_yaml.py`, `SYSTEM_PROMPT.md` / `todo.md` / `handoff.md` / `README.md` / `.env.example` / `pyproject.toml` sdist `config/`.
+
+**Key decisions:**
+
+- **Subclass `crewai.LLM`** rather than monkey-patching LiteLLM — keeps CrewAI events/hooks intact while centralizing policy.
+- **Tools stay code-defined**; YAML only adjusts agent copy + skill folder list + optional M2 task prompt overrides (`{topic}` / `{language}`).
+
+---
+
 ### Next entries (suggested)
 
-- **M5–M6:** Multi-pass compile + biber, QA automation, final report updates.
+- **M8–M9:** Security guards + approval gate; structured `run_report` JSON/Markdown.
 
 Record each as a new subsection under **HW3 prompt log** using the template above.

@@ -17,6 +17,14 @@ uv sync --all-groups
 
 Copy `.env.example` to `.env` and set `OPENAI_API_KEY` (never commit `.env`).
 
+### M7 — YAML config + Gatekeeper (Phase 7)
+
+- **`config/models.yaml`** — provider, model defaults, `timeout_seconds`, `gatekeeper.*` retries/backoff/rate-limit knobs, `rag.enabled`, optional `pricing_per_million_tokens` for **rough** cost logs.
+- **`config/agents.yaml`** — role/goal/backstory + skill folder names (tools stay code-defined).
+- **`config/tasks.yaml`** — optional `overrides.<milestone>.<task_id>` for `description` / `expected_output` (M2 wired; `{topic}` / `{language}` placeholders supported).
+- **`ARTICLEBOOK_CONFIG_DIR`** — point at an alternate config directory (see `.env.example`).
+- Each LLM run writes **`build/resolved_run_config.json`** (redacted; no API keys).
+
 Optional: set **`ARTICLEBOOK_LATEX_ENGINE=xelatex`** if LuaLaTeX is unavailable but XeLaTeX works.
 
 ## Usage
