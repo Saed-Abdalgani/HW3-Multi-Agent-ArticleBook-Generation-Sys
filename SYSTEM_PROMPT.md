@@ -6,7 +6,7 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 
 ## Missing (this repository vs PRD + standards)
 
-**Status:** `NOT READY` for assignment completion — **M1–M5** landed (stub + LLM paths through canonical **LuaLaTeX/XeLaTeX + biber** multipass); **M6** adds deterministic QA + `m6` milestone/CLI (full DoD still requires MiKTeX + PDF page band without `--m6-allow-missing-pdf`). **M7** adds YAML config + instrumented Gatekeeper (`config/*.yaml`, `build/resolved_run_config.json`); **M8** adds security guards + human approval (`--yes`, `--dry-run`) + `skills/security-review`; **M9** still open for full run reports.
+**Status:** `NOT READY` for assignment completion — **M1–M5** landed (stub + LLM paths through canonical **LuaLaTeX/XeLaTeX + biber** multipass); **M6** adds deterministic QA + `m6` milestone/CLI (full DoD still requires MiKTeX + PDF page band without `--m6-allow-missing-pdf`). **M7** adds YAML config + instrumented Gatekeeper (`config/*.yaml`, `build/resolved_run_config.json`); **M8** adds security guards + human approval (`--yes`, `--dry-run`) + `skills/security-review`; **M9** adds run reports (`build/run_report_<run_id>.{json,md}`) + structured logging hooks; **M9-OPT** adds optional Chroma-backed `retrieve_knowledge_snippets` (off unless `rag.enabled` + `uv sync --extra rag`).
 
 ### Product / pipeline (PRD & `plan.md`)
 
@@ -36,8 +36,8 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 | **Tests** | **Partial:** `tests/` with pytest for skills YAML, stub pipeline, workspace sandbox (raise coverage with M2+). |
 | **Ruff / lint** | **Partial:** configured in `pyproject.toml`; run `uv run ruff check src tests`. |
 | **README** | **Improved:** uv install, stub vs LLM usage, troubleshooting (still grows with M4–M6). |
-| **Mechanism PRDs** | **Partial:** `docs/PRD_m1_crew_and_skills.md`, `docs/PRD_m2_content_pipeline.md`, `docs/PRD_m4_latex_assembly.md`, `docs/PRD_m5_compile.md`, `docs/PRD_m6_qa_contract.md`, `docs/PRD_m7_production_harness.md`, `docs/PRD_m8_security.md`. |
-| **Cost / observability** | **Partial:** M7 logs per-LLM-call latency + token deltas + rough cost; `build/resolved_run_config.json` stamps resolved model/provider/seed; full run report still **M9**. |
+| **Mechanism PRDs** | **Partial:** `docs/PRD_m1_crew_and_skills.md`, `docs/PRD_m2_content_pipeline.md`, `docs/PRD_m4_latex_assembly.md`, `docs/PRD_m5_compile.md`, `docs/PRD_m6_qa_contract.md`, `docs/PRD_m7_production_harness.md`, `docs/PRD_m8_security.md`, `docs/PRD_m9_observability.md`, `docs/PRD_m9opt_rag.md`. |
+| **Cost / observability** | **Partial:** M7 logs per-LLM-call latency + token deltas + rough cost; `build/resolved_run_config.json` stamps resolved model/provider/seed; **M9** adds `build/run_report_<run_id>.{json,md}` + redacted task snippets in reports. |
 
 ### Security / repo hygiene (partially addressed)
 

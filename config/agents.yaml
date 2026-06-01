@@ -9,6 +9,7 @@ agents:
     backstory: You distrust uncited claims and prefer internal PRD/plan anchors.
     skills:
       - research-methodology
+      - local-rag
 
   architect:
     role: Outline architect

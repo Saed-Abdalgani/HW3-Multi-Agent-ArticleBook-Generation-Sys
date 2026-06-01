@@ -12,6 +12,12 @@ timeout_seconds: 120
 
 rag:
   enabled: false
+  # Corpus root (relative to repo). Use YAML frontmatter `bib_key:` on .md for M6 .bib mapping.
+  knowledge_dir: knowledge
+  chunk_size: 480
+  chunk_overlap: 80
+  top_k: 5
+  persist_subdir: rag_chroma
 
 gatekeeper:
   instrumented: true

@@ -553,18 +553,18 @@ Use this table to confirm every required document element has at least one ownin
 > Goal: Make every run replayable and debuggable. Related: `plan.md` §10.4, §11.
 
 ### M9.1 — Run context & structured logs
-- [ ] `[P0]` Add `src/articlebook/shared/observability.py`: `run_id` + timestamps +
+- [x] `[P0]` Add `src/articlebook/shared/observability.py`: `run_id` + timestamps +
   structured (JSON-capable) logging. (NFR-8)
-- [ ] `[P1]` Record per-task inputs/outputs (**redacted**), token usage, latency, retries,
+- [x] `[P1]` Record per-task inputs/outputs (**redacted**), token usage, latency, retries,
   errors via the existing `task_callback`. (NFR-8)
 
 ### M9.2 — Final run report
-- [ ] `[P0]` Emit `build/run_report_<run_id>.json` and a human-readable `.md` aggregating
+- [x] `[P0]` Emit `build/run_report_<run_id>.json` and a human-readable `.md` aggregating
   every stage + artifacts + costs. (NFR-8)
-- [ ] `[P2]` Confirm no secrets appear anywhere in the report. (NFR-9, R-10)
+- [x] `[P2]` Confirm no secrets appear anywhere in the report. (NFR-9, R-10)
 
 ### M9 — Exit gate
-- [ ] `[P0]` ✅ Milestone M9 sign-off: a single run produces a complete, redacted,
+- [x] `[P0]` ✅ Milestone M9 sign-off: a single run produces a complete, redacted,
   replayable report. (plan.md §11 M9)
 
 ---
@@ -576,20 +576,20 @@ Use this table to confirm every required document element has at least one ownin
 > ADR-003. ("Add it, unless it's simple" → wired in, but off the default path.)
 
 ### M9-OPT.1 — Local retrieval pipeline
-- [ ] `[P3]` Add a `knowledge/` folder + **document loader** (txt/md/pdf). (R-7)
-- [ ] `[P3]` Add a recursive **text splitter** (fixed size/overlap). (R-7)
-- [ ] `[P3]` Add **local embeddings** (e.g., `sentence-transformers`) to avoid API cost. (NFR-3)
-- [ ] `[P3]` Add a local **vector store** (**Chroma** or **FAISS**, file-backed; no server). (R-7)
-- [ ] `[P3]` Add a **retriever** returning top-k cited snippets. (FR-15)
+- [x] `[P3]` Add a `knowledge/` folder + **document loader** (txt/md/pdf). (R-7)
+- [x] `[P3]` Add a recursive **text splitter** (fixed size/overlap). (R-7)
+- [x] `[P3]` Add **local embeddings** (Chroma ``DefaultEmbeddingFunction`` / ONNX MiniLM) to avoid API cost. (NFR-3)
+- [x] `[P3]` Add a local **vector store** (**Chroma** or **FAISS**, file-backed; no server). (R-7)
+- [x] `[P3]` Add a **retriever** returning top-k cited snippets. (FR-15)
 
 ### M9-OPT.2 — Crew integration
-- [ ] `[P3]` Wrap the retriever as a single sandboxed CrewAI **tool** for the Research
+- [x] `[P3]` Wrap the retriever as a single sandboxed CrewAI **tool** for the Research
   agent; gate behind `config/models.yaml` `rag.enabled`. (FR-2, ADR-003)
-- [ ] `[P3]` Map retrieved source IDs → `.bib` keys; feed the M6 `.bib`↔in-text check. (FR-16)
-- [ ] `[P3]` Output parser returns structured `{claim, source_id}` for Writer/`.bib`. (R-8)
+- [x] `[P3]` Map retrieved source IDs → `.bib` keys; feed the M6 `.bib`↔in-text check. (FR-16)
+- [x] `[P3]` Output parser returns structured `{claim, source_id}` for Writer/`.bib`. (R-8)
 
 ### M9-OPT — Exit gate (only if enabled)
-- [ ] `[P3]` ✅ Milestone M9-OPT sign-off: retriever returns cited snippets mapped to `.bib`
+- [x] `[P3]` ✅ Milestone M9-OPT sign-off: retriever returns cited snippets mapped to `.bib`
   keys; M6 consistency check passes against retrieved sources. (plan.md §11 M9-OPT)
 
 ---

@@ -85,6 +85,10 @@ uv run articlebook --milestone m6 --topic "Your Topic" --language English
 
 **M8 (security):** paid runs prompt for confirmation unless you pass **`--yes`** (CI/automation). Use **`--dry-run`** to validate inputs and skip stub disk writes / crew `write_workspace_file` bytes. If `content/` or `latex/` outputs already exist, you will be warned before overwrite unless `--yes` or `--dry-run`.
 
+**M9 (observability):** each CLI run writes **`build/run_report_<run_id>.json`** and a matching **`.md`** (redacted task snippets, instrumented LLM rows, artifact flags). The CLI prints the paths when the run finishes.
+
+**M9-OPT (local RAG, ADR-003):** set `rag.enabled: true` in `config/models.yaml` (or `ARTICLEBOOK_RAG_ENABLED=true`), install **`uv sync --extra rag`**, add corpus files under **`knowledge/`**, then the Research agent gets the **`retrieve_knowledge_snippets`** tool. Snippet `source_id` values map to `.bib` keys via Markdown front matter (`bib_key:`).
+
 Legacy entrypoint:
 
 ```bash
@@ -123,6 +127,8 @@ Mechanism PRD: [`docs/PRD_m6_qa_contract.md`](docs/PRD_m6_qa_contract.md).
 uv run ruff check src tests
 uv run pytest
 ```
+
+Optional local RAG (M9-OPT): `uv sync --extra rag` then enable `rag.enabled` in `config/models.yaml`.
 
 ## Troubleshooting
 

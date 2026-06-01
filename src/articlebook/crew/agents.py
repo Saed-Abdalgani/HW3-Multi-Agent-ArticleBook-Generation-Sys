@@ -16,11 +16,13 @@ from articlebook.crew.workspace_tools import (
     verify_m3_assets,
     write_workspace_file,
 )
+from articlebook.rag.wiring import optional_rag_research_tools
 
 
 def build_agents(llm: LLM) -> dict[str, Agent]:
     """Create ordered agents for M1/M2/M3 pipelines (skills + sandboxed tools)."""
     read_write = [write_workspace_file, read_workspace_file]
+    research_tools = read_write + optional_rag_research_tools()
     figure_tools = read_write + [run_matplotlib_stub, run_m3_asset_generators, run_lualatex_once]
     compile_tools = [run_lualatex_once, run_latex_canonical_compile, read_workspace_file]
     qa_tools = read_write + [verify_m3_assets, run_m6_contract_checks]
@@ -31,7 +33,7 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
             role="Research librarian",
             goal="Capture credible seed sources and constraints for the run topic.",
             backstory="You distrust uncited claims and prefer internal PRD/plan anchors.",
-            tools=read_write,
+            tools=research_tools,
             skills=["research-methodology"],
         ),
         "architect": build_agent(

@@ -5,19 +5,10 @@ from __future__ import annotations
 import argparse
 import logging
 
+from articlebook.cli_execution import run_articlebook_cli_body
 from articlebook.cli_preflight import reset_cli_security_tokens, run_cli_security_preflight
-from articlebook.m6_qa import run_m6_contract_qa
-from articlebook.pipeline import (
-    run_llm,
-    run_stub_m1,
-    run_stub_m2,
-    run_stub_m3,
-    run_stub_m4,
-    run_stub_m5,
-    run_stub_m6,
-    setup_logging,
-)
-from articlebook.shared.config import load_config_optional
+from articlebook.pipeline import setup_logging
+from articlebook.shared.observability import begin_articlebook_run, end_articlebook_run
 from articlebook.shared.paths import project_root
 
 
@@ -68,72 +59,49 @@ def main() -> None:
     log = logging.getLogger(__name__)
     root = project_root()
     t_dry, t_allow = run_cli_security_preflight(args, root)
+    m9_tok, _run_id = begin_articlebook_run(
+        root,
+        mode="stub" if args.stub else "llm",
+        milestone=args.milestone,
+        topic=args.topic,
+        language=args.language,
+        dry_run=args.dry_run,
+        logger=log,
+    )
+    ok = False
+    crew_summary: str | None = None
+    qa_passed: bool | None = None
+    err: str | None = None
+    rid: str | None = None
     try:
-        if args.stub:
-            log.info(
-                "mode=stub milestone=%s topic=%s language=%s dry_run=%s",
-                args.milestone,
-                args.topic,
-                args.language,
-                args.dry_run,
-            )
-            if args.milestone == "m1":
-                run_stub_m1(args.topic, args.language)
-                print("M1 stub pipeline completed.")
-            elif args.milestone == "m2":
-                run_stub_m2(args.topic, args.language)
-                print("M2 stub content pipeline completed.")
-            elif args.milestone == "m3":
-                run_stub_m3(args.topic, args.language)
-                print("M3 stub pipeline completed.")
-            elif args.milestone == "m4":
-                run_stub_m4(args.topic, args.language)
-                print("M4 stub pipeline completed.")
-            elif args.milestone == "m5":
-                run_stub_m5(args.topic, args.language)
-                print("M5 stub pipeline completed.")
-            else:
-                ok = run_stub_m6(
-                    args.topic, args.language, allow_missing_pdf=args.m6_allow_missing_pdf
-                )
-                if args.dry_run:
-                    print("M6 stub dry-run completed (skipped writes and QA).")
-                    return
-                print(
-                    "M6 stub pipeline completed. "
-                    f"Deterministic QA: {'PASS' if ok else 'FAIL'} — see build/m6_qa_report.md"
-                )
-                if not ok:
-                    raise SystemExit(1)
-            return
-
-        if load_config_optional() is None:
-            raise SystemExit(
-                "OPENAI_API_KEY is not set. Export it or pass --stub for offline placeholders."
-            )
-        log.info(
-            "mode=llm milestone=%s topic=%s language=%s dry_run=%s",
-            args.milestone,
-            args.topic,
-            args.language,
-            args.dry_run,
-        )
-        result = run_llm(args.topic, args.language, milestone=args.milestone)
-        print(result)
-        if args.milestone == "m6":
-            qa = run_m6_contract_qa(
-                project_root(),
-                log_prefix="m6_crew",
-                allow_missing_pdf=args.m6_allow_missing_pdf,
-            )
-            print(
-                "\n--- M6 deterministic QA (post-crew) ---\n"
-                f"PASS={qa.passed}  report=build/m6_qa_report.md"
-            )
-            if not qa.passed:
-                raise SystemExit(1)
+        ok, crew_summary, qa_passed = run_articlebook_cli_body(args, log)
+    except SystemExit as se:
+        code = se.code
+        ok = code is None or code is False or code == 0
+        err = f"SystemExit:{code!r}"
+        raise
+    except BaseException as exc:
+        ok = False
+        err = f"{type(exc).__name__}:{exc}"
+        raise
     finally:
-        reset_cli_security_tokens(t_dry, t_allow)
+        try:
+            rid = end_articlebook_run(
+                root,
+                m9_tok,
+                log,
+                success=ok,
+                crew_result=crew_summary,
+                error=err,
+                qa_passed=qa_passed,
+            )
+        finally:
+            reset_cli_security_tokens(t_dry, t_allow)
+        if rid:
+            print(
+                f"\nRun report: build/run_report_{rid}.json  "
+                f"(markdown: build/run_report_{rid}.md)"
+            )
 
 
 if __name__ == "__main__":

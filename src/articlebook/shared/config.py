@@ -47,7 +47,14 @@ def _default_models_dict() -> dict[str, Any]:
         "temperature": 0.7,
         "seed": 42,
         "timeout_seconds": 120.0,
-        "rag": {"enabled": False},
+        "rag": {
+            "enabled": False,
+            "knowledge_dir": "knowledge",
+            "chunk_size": 480,
+            "chunk_overlap": 80,
+            "top_k": 5,
+            "persist_subdir": "rag_chroma",
+        },
         "gatekeeper": {
             "instrumented": True,
             "retry_max_attempts": 4,
@@ -68,6 +75,16 @@ def load_models_document() -> dict[str, Any]:
     return merged
 
 
+def rag_feature_enabled() -> bool:
+    """True when M9-OPT local RAG is on (YAML ``rag.enabled`` or ``ARTICLEBOOK_RAG_ENABLED``)."""
+    doc = load_models_document()
+    rag_block = doc.get("rag") or {}
+    flag = bool(rag_block.get("enabled", False))
+    if os.getenv("ARTICLEBOOK_RAG_ENABLED", "").strip().casefold() in {"1", "true", "yes"}:
+        flag = True
+    return flag
+
+
 def load_config() -> dict[str, Any]:
     """Return model/runtime settings and API key for LLM construction (M7)."""
     api_key = os.getenv("OPENAI_API_KEY")
@@ -85,10 +102,7 @@ def load_config() -> dict[str, Any]:
             str(doc.get("timeout_seconds", 120.0)),
         )
     )
-    rag_enabled = doc.get("rag") or {}
-    rag_flag = bool(rag_enabled.get("enabled", False))
-    if os.getenv("ARTICLEBOOK_RAG_ENABLED", "").strip().casefold() in {"1", "true", "yes"}:
-        rag_flag = True
+    rag_flag = rag_feature_enabled()
 
     gate = dict(doc.get("gatekeeper") or {})
     g_env_attempts = os.getenv("ARTICLEBOOK_GK_RETRY_MAX")

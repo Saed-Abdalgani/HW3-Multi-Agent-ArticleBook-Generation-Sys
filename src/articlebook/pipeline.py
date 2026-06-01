@@ -18,6 +18,7 @@ from articlebook.pipeline_stubs import (
 )
 from articlebook.shared.config import load_config, write_resolved_run_stamp
 from articlebook.shared.gatekeeper import create_llm
+from articlebook.shared.observability import append_task_output_if_tracing, log_json_event
 from articlebook.shared.output_validate import validate_agent_text_output_lenient
 from articlebook.shared.paths import project_root
 from articlebook.shared.security_context import (
@@ -74,8 +75,10 @@ def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
 
         def _task_cb(output: object) -> None:
             text = str(output)
+            append_task_output_if_tracing(text)
             snippet = text[:400].replace("\n", " ")
             log.info("crew.task.done snippet=%s", snippet)
+            log_json_event(log, "crew_task_done", chars=len(text))
             if validate_agent_text_output_lenient(text, stage="crew.task") is None:
                 log.warning("crew.task.output failed lenient validation (empty or invalid)")
 

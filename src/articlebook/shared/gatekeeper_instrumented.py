@@ -17,6 +17,7 @@ from articlebook.shared.gatekeeper_policy import (
     snapshot_usage,
     usage_delta,
 )
+from articlebook.shared.observability_llm import record_llm_fail, record_llm_ok
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,12 @@ class InstrumentedLLM(LLM):
                         type(exc).__name__,
                         exc,
                     )
+                    record_llm_fail(
+                        attempt=attempt,
+                        max_attempts=self._gk_retry_max,
+                        error_type=type(exc).__name__,
+                        message=str(exc),
+                    )
                     raise
                 delay = min(
                     self._gk_max_delay_s,
@@ -86,16 +93,31 @@ class InstrumentedLLM(LLM):
             from_agent = kwargs.get("from_agent")
             agent_name = getattr(from_agent, "role", None) if from_agent is not None else None
             logger.info(
-                "Gatekeeper: LLM ok attempt=%s latency_s=%.3f agent=%s token_delta=%s est_cost_usd=%.6f",
+                "Gatekeeper: LLM ok attempt=%s latency_s=%.3f agent=%s token_delta=%s "
+                "est_cost_usd=%.6f",
                 attempt,
                 dt,
                 agent_name,
                 delta,
                 est,
             )
+            record_llm_ok(
+                attempt=attempt,
+                max_attempts=self._gk_retry_max,
+                latency_s=dt,
+                agent_name=agent_name,
+                token_delta=delta,
+                est_cost_usd=est,
+            )
             return result
 
         assert last_exc is not None
+        record_llm_fail(
+            attempt=self._gk_retry_max,
+            max_attempts=self._gk_retry_max,
+            error_type=type(last_exc).__name__,
+            message=str(last_exc),
+        )
         raise last_exc
 
     def _gk_rate_limit_wait(self) -> None:
