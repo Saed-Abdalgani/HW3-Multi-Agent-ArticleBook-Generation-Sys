@@ -6,13 +6,13 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 
 ## Missing (this repository vs PRD + standards)
 
-**Status:** `NOT READY` for assignment completion — **M1–M5** landed (stub + LLM paths through canonical **LuaLaTeX/XeLaTeX + biber** multipass); **M6** adds deterministic QA + `m6` milestone/CLI (full DoD still requires MiKTeX + PDF page band without `--m6-allow-missing-pdf`). **M7** adds YAML config + instrumented Gatekeeper (`config/*.yaml`, `build/resolved_run_config.json`); **M8** adds security guards + human approval (`--yes`, `--dry-run`) + `skills/security-review`; **M9** adds run reports (`build/run_report_<run_id>.{json,md}`) + structured logging hooks; **M9-OPT** adds optional Chroma-backed `retrieve_knowledge_snippets` (off unless `rag.enabled` + `uv sync --extra rag`).
+**Status:** `NOT READY` for assignment completion — **M1–M5** landed (LLM crew + deterministic **`pipeline_stubs`** for tests through canonical **LuaLaTeX/XeLaTeX + biber** multipass); **M6** adds deterministic QA + `m6` milestone/CLI (full DoD still requires MiKTeX + PDF page band without `--m6-allow-missing-pdf`). **M7** adds YAML config + instrumented Gatekeeper (`config/*.yaml`, `build/resolved_run_config.json`); **M8** adds security guards + human approval (`--yes`, `--dry-run`) + `skills/security-review`; **M9** adds run reports (`build/run_report_<run_id>.{json,md}`) + structured logging hooks; **M9-OPT** adds optional Chroma-backed `retrieve_knowledge_snippets` (off unless `rag.enabled` + `uv sync --extra rag`).
 
 ### Product / pipeline (PRD & `plan.md`)
 
 | Gap | Notes |
 |-----|--------|
-| **CrewAI crew** | **M1:** Sequential crew, agents, tasks, `--stub` path in `src/articlebook/`; LLM path requires API key and external spend. |
+| **CrewAI crew** | **M1:** Sequential crew, agents, tasks; LLM path requires API key and external spend. Deterministic **`pipeline_stubs`** for tests only. |
 | **Skills** | **M1:** `skills/*/SKILL.md` packages + `house-culture` crew default. |
 | **Topic & language in pipeline** | **M1:** Fed into task descriptions + stub artifacts; **M2:** validated inputs, RTL/LTR normalization, `content/` + `latex/references.bib` (stub deterministic; LLM crew default). |
 | **Markdown-first content** | **M2:** Six `content/chapter_*.md` + `outline.md`; **M4:** generated `latex/chapters/chapter_*.tex` + `main.tex`. |
@@ -44,7 +44,7 @@ Use this file as the **authoritative** project system prompt (Cursor, agents, or
 | Item | Notes |
 |------|--------|
 | **Input / tool security (M8)** | **Addressed:** topic heuristics + denylist on `write_workspace_file`; read hardening + trust notice; overwrite + dry-run gates; CLI `--yes` / `--dry-run`; `skills/security-review`. |
-| **`.env` in Git** | Must stay **untracked**; use `.env.example` only in commits. If history ever contained secrets, **rotate keys**. |
+| **`.env` in Git** | Must stay **untracked**; document variables in **README** (no committed env template file). If history ever contained secrets, **rotate keys**. |
 | **`.gitignore`** | Hardened for secrets and LaTeX noise — keep aligned when adding new tools or credential file patterns. |
 
 ### Documentation debt
@@ -105,7 +105,7 @@ project-root/
 ├── README.md
 ├── pyproject.toml
 ├── uv.lock
-├── .env.example
+├── README.md  (environment variable table for local `.env`)
 └── .gitignore
 ```
 
@@ -160,7 +160,7 @@ project-root/
 - Target **≤ ~150 lines of substantive code per file** when practical; split by responsibility if growth continues (aligns with maintainability; see `PROMPTS.md` for repo-specific notes if they differ).
 - **Descriptive names**; **docstrings** on public modules, classes, and functions.
 - **Comments** explain *why*, not obvious *what*.
-- **No secrets** in source; **no** committed `.env`. Use **`.env.example`** (this repo’s spelling) documenting variables only.
+- **No secrets** in source; **no** committed `.env` or `.env.*`. Document variables in **README** only.
 - **Ruff:** `uv run ruff check .` — aim for **zero** violations on touched code; fix or explicitly justify exceptions.
 
 ---

@@ -17,7 +17,7 @@ def ensure_paid_llm_confirmed(*, assume_yes: bool) -> None:
     if not _is_interactive():
         raise SystemExit(
             "Refusing paid LLM run in non-interactive mode without --yes. "
-            "Pass --yes to confirm API spend, or use --stub."
+            "Pass --yes to confirm API spend."
         )
     print(
         "\n--- Paid LLM run ---\n"

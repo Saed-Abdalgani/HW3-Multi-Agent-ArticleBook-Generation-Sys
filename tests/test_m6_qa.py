@@ -9,7 +9,7 @@ from articlebook.m6_qa import (
     parse_bib_keys,
     run_m6_contract_qa,
 )
-from articlebook.pipeline import run_stub_m6
+from articlebook.pipeline_stubs import run_stub_m6
 from articlebook.shared.paths import project_root
 
 

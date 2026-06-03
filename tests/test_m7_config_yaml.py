@@ -13,7 +13,10 @@ from articlebook.crew.task_overrides import clear_task_config_cache, resolve_tas
 from articlebook.shared.config import load_config, load_models_document, write_resolved_run_stamp
 
 
-def test_load_models_document_merges_defaults(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_load_models_document_merges_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
     cfg_dir = tmp_path / "config"
     cfg_dir.mkdir()
     (cfg_dir / "models.yaml").write_text(
@@ -34,7 +37,10 @@ def test_load_models_document_merges_defaults(monkeypatch: pytest.MonkeyPatch, t
     assert doc["gatekeeper"]["instrumented"] is True
 
 
-def test_write_resolved_run_stamp_writes_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_write_resolved_run_stamp_writes_json(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(
         "articlebook.shared.config.project_root",
         lambda: tmp_path,

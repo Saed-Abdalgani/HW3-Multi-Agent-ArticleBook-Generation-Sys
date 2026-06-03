@@ -20,11 +20,17 @@ def test_redact_strips_openai_style_key() -> None:
     assert "[REDACTED_SK]" in t
 
 
+def test_redact_strips_google_gsk_style_key() -> None:
+    t = redact_for_report("k=gsk_1234567890123456789012345678901234567890 end")
+    assert "gsk_1234567890123456789012345678901234567890" not in t
+    assert "[REDACTED_GSK]" in t
+
+
 def test_begin_end_writes_pair(tmp_path: Path) -> None:
     log = logging.getLogger("test_m9")
     tok, rid = begin_articlebook_run(
         tmp_path,
-        mode="stub",
+        mode="llm",
         milestone="m2",
         topic="topic sk-123456789012345678901234567890",
         language="English",

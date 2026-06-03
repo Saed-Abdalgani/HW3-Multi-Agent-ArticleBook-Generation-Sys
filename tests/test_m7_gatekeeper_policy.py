@@ -5,7 +5,10 @@ from __future__ import annotations
 import pytest
 
 from articlebook.shared.gatekeeper import estimate_cost_usd, is_transient_llm_error
-from articlebook.shared.output_validate import validate_agent_text_output, validate_agent_text_output_lenient
+from articlebook.shared.output_validate import (
+    validate_agent_text_output,
+    validate_agent_text_output_lenient,
+)
 
 
 def test_is_transient_llm_error_heuristic() -> None:

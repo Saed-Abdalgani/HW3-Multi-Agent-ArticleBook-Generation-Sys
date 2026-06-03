@@ -6,8 +6,8 @@ Generate a 15–20 page LaTeX book/article using **CrewAI** (see `prd.md`, `plan
 
 - **Python** 3.11–3.13 (see `pyproject.toml`)
 - **uv** for environments and commands ([https://docs.astral.sh/uv/](https://docs.astral.sh/uv/))
-- **MiKTeX** (Windows) with `lualatex` and **`biber`** on `PATH` for real multi-pass builds (optional for `--stub` when the engine is missing; the driver still writes a skip journal)
-- **OpenAI API key** in the environment for LLM crew runs (not required for `--stub`)
+- **MiKTeX** (Windows) with `lualatex` and **`biber`** on `PATH` for real multi-pass builds (without them, the compile driver still writes journals; M6 can use `--m6-allow-missing-pdf` for static QA only)
+- **LLM API key** — `OPENAI_API_KEY` for OpenAI, or **`GOOGLE_API_KEY`** / `GEMINI_API_KEY` when `provider` is `google` in `config/models.yaml` or `ARTICLEBOOK_LLM_PROVIDER=google`
 
 ## Install
 
@@ -15,67 +15,42 @@ Generate a 15–20 page LaTeX book/article using **CrewAI** (see `prd.md`, `plan
 uv sync --all-groups
 ```
 
-Copy `.env.example` to `.env` and set `OPENAI_API_KEY` (never commit `.env`).
+Create a **`.env`** file in the repo root (gitignored — never commit it) with at least your provider’s API key. See **Environment variables** below.
+
+### Environment variables (local `.env` only)
+
+| Variable | Purpose |
+|----------|---------|
+| `OPENAI_API_KEY` | OpenAI (when `provider` / `ARTICLEBOOK_LLM_PROVIDER` is OpenAI-compatible). |
+| `GOOGLE_API_KEY` or `GEMINI_API_KEY` | Google Gemini when `provider` is `google` (see `config_credentials.py`). |
+| `MODEL_NAME`, `TEMPERATURE`, `SEED` | Overrides for `config/models.yaml` defaults. |
+| `ARTICLEBOOK_LLM_PROVIDER` | e.g. `openai` or `google`. |
+| `ARTICLEBOOK_LLM_TIMEOUT_S` | LLM timeout (seconds). |
+| `ARTICLEBOOK_CONFIG_DIR` | Alternate directory for `config/*.yaml`. |
+| `ARTICLEBOOK_GK_RETRY_MAX`, `ARTICLEBOOK_GK_MIN_INTERVAL_S` | Gatekeeper knobs. |
+| `ARTICLEBOOK_RAG_ENABLED` | `true` / `1` to force RAG on (YAML is primary). |
+| `ARTICLEBOOK_LATEX_ENGINE` | `lualatex` (default) or `xelatex`. |
+
+### CI / tests without paid API calls
+
+Deterministic workspace fixtures are produced by **`articlebook.pipeline_stubs`** (`run_stub_m2` … `run_stub_m6`). The pytest suite calls these modules directly; the **`articlebook` CLI no longer exposes `--stub`**.
 
 ### M7 — YAML config + Gatekeeper (Phase 7)
 
 - **`config/models.yaml`** — provider, model defaults, `timeout_seconds`, `gatekeeper.*` retries/backoff/rate-limit knobs, `rag.enabled`, optional `pricing_per_million_tokens` for **rough** cost logs.
 - **`config/agents.yaml`** — role/goal/backstory + skill folder names (tools stay code-defined).
 - **`config/tasks.yaml`** — optional `overrides.<milestone>.<task_id>` for `description` / `expected_output` (M2 wired; `{topic}` / `{language}` placeholders supported).
-- **`ARTICLEBOOK_CONFIG_DIR`** — point at an alternate config directory (see `.env.example`).
+- **`ARTICLEBOOK_CONFIG_DIR`** — point at an alternate config directory (see table above).
 - Each LLM run writes **`build/resolved_run_config.json`** (redacted; no API keys).
 
 Optional: set **`ARTICLEBOOK_LATEX_ENGINE=xelatex`** if LuaLaTeX is unavailable but XeLaTeX works.
 
 ## Usage
 
-**Offline stub — M2 content pipeline (default):** outline, six chapters (including BiDi), `references.bib`, research notes, review gate (no LLM, no LaTeX required):
+**LLM crew** — requires a configured API key (see above). Default milestone is **M2** (research → outline → chapters → QA).
 
 ```bash
-uv run articlebook --stub --topic "Your Topic" --language English
-```
-
-**Offline stub — M1 full smoke** (placeholder artifacts, Matplotlib stub, optional LuaLaTeX once):
-
-```bash
-uv run articlebook --stub --milestone m1 --topic "Your Topic" --language English
-```
-
-**Offline stub — M3** (everything in M2 plus `scripts/make_graph.py` / `make_image.py`, `figures/graph.pdf`, `figures/image.png`, and `build/m3_stub_manifest.md`; LaTeX showcase is `latex/chapters/m3_fr9_showcase.tex` included from `latex/main.tex`):
-
-```bash
-uv run articlebook --stub --milestone m3 --topic "Your Topic" --language English
-```
-
-**Offline stub — M4** (M2 + M3, Markdown → `latex/chapters/*.tex`, regenerated `main.tex`, then **canonical multipass compile**: engine → **biber** → engine ×2+ with stabilization, per `plan.md` §4). Logs and `build/m4_compile_journal.json`:
-
-```bash
-uv run articlebook --stub --milestone m4 --topic "Your Topic" --language English
-```
-
-**Offline stub — M5** (same pipeline as M4 stub; writes `build/m5_stub_manifest.md` and `build/m5_compile_journal.json` for M5 sign-off trail):
-
-```bash
-uv run articlebook --stub --milestone m5 --topic "Your Topic" --language English
-```
-
-**Offline stub — M6 (full pipeline + QA gate)** — runs the M5 stub, then deterministic FR-20 checks (`build/m6_qa_report.md`). Exits with status **1** if the contract fails. On machines **without** MiKTeX, pass `--m6-allow-missing-pdf` so PDF/page checks and missing-engine compile status are relaxed (static checks still run; not a substitute for a real PDF sign-off):
-
-```bash
-uv run articlebook --stub --milestone m6 --topic "Your Topic" --language English
-uv run articlebook --stub --milestone m6 --m6-allow-missing-pdf --topic "Your Topic" --language English
-```
-
-**LLM crew** — requires `OPENAI_API_KEY`. Default is **M2** (research → outline → chapters → QA). Milestones:
-
-- `m1` — full-stack smoke (single `run_lualatex_once` in compile task)
-- `m3` — M2 + figure generators + extended QA
-- `m4` — M3 + LaTeX assembly + **one** compile pass in the crew task (legacy smoke)
-- **`m5`** — M3 + LaTeX assembly + **`run_latex_canonical_compile`** (multipass + biber) + QA on compile journal
-- **`m6`** — same as M5 crew tasks with `m6_crew` journal prefix + **`run_m6_contract_checks`**; CLI re-runs deterministic QA after kickoff and exits **1** on failure
-
-```bash
-uv run articlebook --topic "Your Topic" --language Hebrew
+uv run articlebook --topic "Your Topic" --language English
 uv run articlebook --milestone m1 --topic "Your Topic" --language English
 uv run articlebook --milestone m3 --topic "Your Topic" --language English
 uv run articlebook --milestone m4 --topic "Your Topic" --language English
@@ -83,7 +58,17 @@ uv run articlebook --milestone m5 --topic "Your Topic" --language English
 uv run articlebook --milestone m6 --topic "Your Topic" --language English
 ```
 
-**M8 (security):** paid runs prompt for confirmation unless you pass **`--yes`** (CI/automation). Use **`--dry-run`** to validate inputs and skip stub disk writes / crew `write_workspace_file` bytes. If `content/` or `latex/` outputs already exist, you will be warned before overwrite unless `--yes` or `--dry-run`.
+Milestones:
+
+- `m1` — full-stack smoke (single `run_lualatex_once` in compile task)
+- `m3` — M2 + figure generators + extended QA
+- `m4` — M3 + LaTeX assembly + **one** compile pass in the crew task (legacy smoke)
+- **`m5`** — M3 + LaTeX assembly + **`run_latex_canonical_compile`** (multipass + biber) + QA on compile journal
+- **`m6`** — same as M5 crew tasks with `m6_crew` journal prefix + **`run_m6_contract_checks`**; CLI re-runs deterministic QA after kickoff and exits **1** on failure
+
+On machines **without** MiKTeX, pass **`--m6-allow-missing-pdf`** so PDF/page checks and missing-engine compile status are relaxed (static checks still run; not a substitute for a real PDF sign-off).
+
+**M8 (security):** paid runs prompt for confirmation unless you pass **`--yes`** (CI/automation). Use **`--dry-run`** to validate inputs and skip crew `write_workspace_file` bytes. If `content/` or `latex/` outputs already exist, you will be warned before overwrite unless `--yes` or `--dry-run`.
 
 **M9 (observability):** each CLI run writes **`build/run_report_<run_id>.json`** and a matching **`.md`** (redacted task snippets, instrumented LLM rows, artifact flags). The CLI prints the paths when the run finishes.
 
@@ -92,12 +77,12 @@ uv run articlebook --milestone m6 --topic "Your Topic" --language English
 Legacy entrypoint:
 
 ```bash
-uv run python main.py --stub --topic "Your Topic" --language English
+uv run python main.py --topic "Your Topic" --language English
 ```
 
 ## M5 compile artifacts
 
-Under `build/` (prefix from stub `m4`/`m5` or crew `m5_crew`):
+Under `build/` (prefix from crew `m5_crew` or deterministic `pipeline_stubs` runs):
 
 - `*_passNN_*.log` — stdout/stderr per subprocess
 - `*_compile_journal.json` — pass list, return codes, unresolved log line samples
@@ -108,7 +93,7 @@ Mechanism PRD: [`docs/PRD_m5_compile.md`](docs/PRD_m5_compile.md).
 ## M6 QA artifacts
 
 - `build/m6_qa_report.md` / `build/m6_qa_report.json` — deterministic FR-20 contract (links/refs log scan, bib↔cite, FR-9, structure, PDF page band, secret scan)
-- `build/m6_stub_manifest.md` — stub sign-off pointer (after `--stub --milestone m6`)
+- `build/m6_stub_manifest.md` — pointer after deterministic `run_stub_m6` (tests / fixtures)
 
 Mechanism PRD: [`docs/PRD_m6_qa_contract.md`](docs/PRD_m6_qa_contract.md).
 
@@ -132,7 +117,7 @@ Optional local RAG (M9-OPT): `uv sync --extra rag` then enable `rag.enabled` in 
 
 ## Troubleshooting
 
-- **`OPENAI_API_KEY is not set`:** use `--stub`, or export the key before running the LLM path.
+- **No LLM API key / wrong provider:** set `OPENAI_API_KEY` or `GOOGLE_API_KEY` to match `provider` in `config/models.yaml` (or override with `ARTICLEBOOK_LLM_PROVIDER`). For Gemini via LiteLLM/CrewAI, use a model id such as `gemini/gemini-2.0-flash` in `MODEL_NAME` or YAML.
 - **`lualatex not found`:** install MiKTeX and ensure `lualatex` / `biber` are on `PATH` (on Windows the driver also prepends the default MiKTeX user `bin` when engines are missing from `PATH`).
 - **Want XeLaTeX instead:** set `ARTICLEBOOK_LATEX_ENGINE=xelatex` in the environment.
 - **Import errors running `python main.py` outside `uv`:** run via `uv run` so the `articlebook` package from `src/` is on the environment path.

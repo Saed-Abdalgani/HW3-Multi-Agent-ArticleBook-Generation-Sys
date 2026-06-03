@@ -61,5 +61,13 @@ def is_transient_llm_error(exc: BaseException) -> bool:
     if name in transient_names:
         return True
     msg = str(exc).lower()
-    needles = ("timeout", "rate limit", "429", "503", "502", "temporarily unavailable", "overloaded")
+    needles = (
+        "timeout",
+        "rate limit",
+        "429",
+        "503",
+        "502",
+        "temporarily unavailable",
+        "overloaded",
+    )
     return any(n in msg for n in needles)

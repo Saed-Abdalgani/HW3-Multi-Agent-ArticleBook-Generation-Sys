@@ -25,7 +25,7 @@ This document records significant AI-assisted development interactions: context,
 - **Skills:** Per-agent **CrewAI Skills** live under `skills/*/SKILL.md` (see [plan.md](plan.md) §1.3); **M1** delivered the tree plus a crew-level `house-culture` skill.
 - **Tools:** Sandboxed workspace tools in `articlebook.crew.workspace_tools` (writes under `content/`, `latex/`, `figures/`, `build/`, `scripts/`; reads selected root docs). Optional web search tools remain future work behind Gatekeeper.
 - **Toolchain:** **MiKTeX** on Windows; `compile_latex_canonical` prepends default user MiKTeX `bin` when engines are missing from `PATH`. **`ARTICLEBOOK_LATEX_ENGINE`** selects `lualatex` vs `xelatex`. Bibliography: **biber** between passes ([docs/PRD_m5_compile.md](docs/PRD_m5_compile.md)); QA contract expands in M6 ([prd.md](prd.md) FR-17–FR-20).
-- **Configuration:** `articlebook.shared.config` merges **`config/models.yaml`** with `.env` (`python-dotenv`): `OPENAI_API_KEY` for LLM runs, env overrides for `MODEL_NAME`, `TEMPERATURE`, `SEED`, `ARTICLEBOOK_LLM_PROVIDER`, `ARTICLEBOOK_LLM_TIMEOUT_S`, `ARTICLEBOOK_CONFIG_DIR`, gatekeeper knobs (`ARTICLEBOOK_GK_*`). **`config/agents.yaml`** / **`config/tasks.yaml`** overlay agent copy and M2 task prompts. See [.env.example](.env.example).
+- **Configuration:** `articlebook.shared.config` merges **`config/models.yaml`** with `.env` (`python-dotenv`): `OPENAI_API_KEY` for LLM runs, env overrides for `MODEL_NAME`, `TEMPERATURE`, `SEED`, `ARTICLEBOOK_LLM_PROVIDER`, `ARTICLEBOOK_LLM_TIMEOUT_S`, `ARTICLEBOOK_CONFIG_DIR`, gatekeeper knobs (`ARTICLEBOOK_GK_*`). **`config/agents.yaml`** / **`config/tasks.yaml`** overlay agent copy and M2 task prompts. Env vars are listed in **README** (local `.env` only; never commit secrets).
 - **Dependencies:** Declared in [pyproject.toml](pyproject.toml); lock with [uv.lock](uv.lock) via `uv lock`. [requirements.txt](requirements.txt) is a pointer only.
 - **Reproducibility notes:** [versions.txt](versions.txt) is referenced in [todo.md](todo.md) for recording installed tool versions.
 - **Repo layout (present):** `src/articlebook/` package, `skills/`, `content/`, `figures/`, `scripts/`, `latex/` (with `chapters/`), `build/` (compile output); placeholders via `.gitkeep` where empty.
@@ -192,7 +192,7 @@ Earlier homework used this file as a **long** step-by-step log (neural signal ex
 **Tool:** Cursor Agent  
 **Date:** 2026-05-31
 
-**Context:** Repo gained `content/`, `figures/`, `scripts/`, `versions.txt`, `.env.example`, and `requirements.txt` uses `>=` minimums; `skills/` not yet created.
+**Context:** Repo gained `content/`, `figures/`, `scripts/`, `versions.txt`, local `.env` (gitignored), and `requirements.txt` uses `>=` minimums; `skills/` not yet created.
 
 **Prompt summary:** Update prompts.md for this project; keep the important things.
 
@@ -200,7 +200,7 @@ Earlier homework used this file as a **long** step-by-step log (neural signal ex
 
 **Output summary:**
 
-- [PROMPTS.md](PROMPTS.md) **v3.01** — filename note, corrected dependency wording, `.env.example` / `versions.txt` / layout bullets, explicit “skills folder pending M1,” preserved sections above.
+- [PROMPTS.md](PROMPTS.md) **v3.01** — filename note, corrected dependency wording, env / `versions.txt` / layout bullets, explicit “skills folder pending M1,” preserved sections above.
 
 **Key decisions:**
 
@@ -340,7 +340,7 @@ Earlier homework used this file as a **long** step-by-step log (neural signal ex
 - `articlebook.shared.gatekeeper` — `InstrumentedLLM` subclass (transient-error retries + jitter, per-call latency + token-delta + rough USD estimate from YAML pricing table).
 - `articlebook.crew.agent_overrides`, `articlebook.crew.task_overrides`; `crew/agents.py` merges YAML; `tasks_m2.py` uses task overrides; `skills/compilation/SKILL.md`.
 - `pipeline.run_llm` — stamp `build/resolved_run_config.json`, richer `log_resolved_run_config`, lenient output validation in `task_callback`, post-kickoff `get_token_usage_summary` log.
-- Docs/tests: `docs/PRD_m7_production_harness.md`, `tests/test_m7_gatekeeper_policy.py`, `tests/test_m7_config_yaml.py`, `SYSTEM_PROMPT.md` / `todo.md` / `handoff.md` / `README.md` / `.env.example` / `pyproject.toml` sdist `config/`.
+- Docs/tests: `docs/PRD_m7_production_harness.md`, `tests/test_m7_gatekeeper_policy.py`, `tests/test_m7_config_yaml.py`, `SYSTEM_PROMPT.md` / `todo.md` / `handoff.md` / `README.md` / `pyproject.toml` sdist `config/`.
 
 **Key decisions:**
 

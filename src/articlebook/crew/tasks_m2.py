@@ -37,7 +37,12 @@ def build_m2_tasks(agents: dict[str, Agent], topic: str, language: str) -> list[
         topic=topic,
         language=language,
     )
-    outline = Task(description=od, expected_output=oe, agent=agents["architect"], context=[research])
+    outline = Task(
+        description=od,
+        expected_output=oe,
+        agent=agents["architect"],
+        context=[research],
+    )
 
     wd, we = resolve_task_strings(
         "m2",

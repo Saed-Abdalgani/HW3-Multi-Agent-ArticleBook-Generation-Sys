@@ -1,4 +1,4 @@
-"""High-level runners: stub vs LLM, milestones M1–M6."""
+"""High-level runners: LLM crew, milestones M1–M6."""
 
 from __future__ import annotations
 
@@ -8,14 +8,6 @@ from typing import Literal
 from articlebook.crew.crew_builder import build_crew
 from articlebook.crew.workspace_tools import bind_workspace_root, reset_workspace_root
 from articlebook.inputs import log_resolved_run_config, validate_topic_language
-from articlebook.pipeline_stubs import (
-    run_stub_m1,
-    run_stub_m2,
-    run_stub_m3,
-    run_stub_m4,
-    run_stub_m5,
-    run_stub_m6,
-)
 from articlebook.shared.config import load_config, write_resolved_run_stamp
 from articlebook.shared.gatekeeper import create_llm
 from articlebook.shared.observability import append_task_output_if_tracing, log_json_event
@@ -31,12 +23,6 @@ Milestone = Literal["m1", "m2", "m3", "m4", "m5", "m6"]
 __all__ = [
     "Milestone",
     "setup_logging",
-    "run_stub_m1",
-    "run_stub_m2",
-    "run_stub_m3",
-    "run_stub_m4",
-    "run_stub_m5",
-    "run_stub_m6",
     "run_llm",
     "run_llm_m1",
     "run_llm_m2",

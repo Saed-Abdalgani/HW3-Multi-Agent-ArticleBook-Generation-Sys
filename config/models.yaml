@@ -38,3 +38,6 @@ pricing_per_million_tokens:
   gpt-4o:
     input: 2.5
     output: 10.0
+  gemini/gemini-2.0-flash:
+    input: 0.1
+    output: 0.4

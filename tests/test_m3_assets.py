@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from articlebook.m3_assets import verify_m3_figure_assets
-from articlebook.pipeline import run_stub_m3
+from articlebook.pipeline_stubs import run_stub_m3
 from articlebook.shared.paths import project_root
 
 

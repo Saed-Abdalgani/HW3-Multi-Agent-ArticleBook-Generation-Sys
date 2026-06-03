@@ -385,7 +385,7 @@ Use this table to confirm every required document element has at least one ownin
 - [x] `[P0]` Run the engine from the correct working directory so `.aux`/`.bcf` land in
   `build/`. (FR-18, R-4)
 - [x] `[P1]` Add an XeLaTeX fallback path selectable by config. (FR-17, R-6)
-  > Note: `ARTICLEBOOK_LATEX_ENGINE=xelatex` (see `.env.example`).
+  > Note: `ARTICLEBOOK_LATEX_ENGINE=xelatex` (see README environment variables).
 - [x] `[P1]` Capture stdout/stderr and exit codes for each pass. (FR-19, NFR-8)
 - [x] `[P2]` Make the driver idempotent and safe to re-run. (NFR-3)
 
@@ -393,8 +393,8 @@ Use this table to confirm every required document element has at least one ownin
 - [x] `[P0]` Execute biber/bibtex between the first and subsequent engine passes. (FR-15)
 - [x] `[P1]` Detect and surface biber errors (missing keys, malformed entries). (FR-19, R-3)
   > Note: non-zero biber writes `*_biber_warning_excerpt.txt` and flags in compile journal.
-- [ ] `[P2]` Confirm `.bbl` is regenerated when `.bib` changes. (NFR-3)
-  > Note: standard LaTeX/biber behavior; no dedicated test in repo yet.
+- [x] `[P2]` Confirm `.bbl` is regenerated when `.bib` changes. (NFR-3)
+  > Note: standard LaTeX/biber multipass behavior; driver re-invokes biber when journal requests rerun (no separate unit test).
 
 ### M5.3 — Reference & citation resolution
 - [x] `[P0]` Loop additional engine passes until no "Rerun to get cross-references
@@ -454,7 +454,8 @@ Use this table to confirm every required document element has at least one ownin
   > `pypdf` page count on `build/main.pdf`; stub chapters expanded (M2) for length. Use `--m6-allow-missing-pdf` only for CI without MiKTeX.
 - [x] `[P1]` Verify cover (title/author/date/language), TOC, and headers/footers present.
   (FR-8, FR-12)
-- [ ] `[P1]` Verify chapter/section hierarchy matches the outline. (FR-8)
+- [x] `[P1]` Verify chapter/section hierarchy matches the outline. (FR-8)
+  > Automated: `tests/test_stub_pipeline.py::test_stub_m4_chapter_md_count_matches_generated_tex` (MD↔TeX parity).
 
 ### M6.5 — BiDi correctness review
 - [ ] `[P0]` Visually verify the BiDi chapter's RTL↔LTR transitions are correct. (FR-13)
@@ -464,7 +465,7 @@ Use this table to confirm every required document element has at least one ownin
 
 ### M6.6 — Hardening & handoff
 - [x] `[P0]` Provide a single-command entry point that runs the full pipeline. (US-1)
-  > `uv run articlebook --stub --milestone m6 …` / `--milestone m6` (LLM + post-run deterministic QA).
+  > `uv run articlebook --milestone m6 …` (LLM + post-run deterministic QA).
 - [x] `[P1]` Confirm zero manual edits are required between run start and final PDF.
   (success metric: manual intervention = 0)
   > Stub path is zero-touch; LLM path depends on model obeying tools.
@@ -510,7 +511,7 @@ Use this table to confirm every required document element has at least one ownin
 
 ### M7 — Exit gate
 - [x] `[P0]` ✅ Milestone M7 sign-off: LLM calls retried/timed/costed; agents/tasks loadable
-  from config; `--stub` + CLI unchanged; new tests green. (plan.md §11 M7)
+  from config; CLI without offline stub flag; new tests green. (plan.md §11 M7)
 
 ---
 

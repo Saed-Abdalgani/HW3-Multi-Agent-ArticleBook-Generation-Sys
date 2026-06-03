@@ -15,12 +15,12 @@
 | Driver | `src/articlebook/latex_compile/` (`canonical.py`, `runner.py`, …); shim `compile_multipass.py` |
 | Crew tool | `src/articlebook/crew/workspace_tools.py` → `run_latex_canonical_compile` |
 | M5/M6 tasks | `src/articlebook/crew/tasks_m5.py`, `tasks_m6.py`, `crew_builder.py` |
-| Stubs | `src/articlebook/pipeline_stubs.py` (`run_stub_m4` … `run_stub_m6`) |
+| Deterministic fixtures (tests / scripts) | `src/articlebook/pipeline_stubs.py` (`run_stub_m4` … `run_stub_m6`) — not exposed on CLI |
 | Spec | `docs/PRD_m5_compile.md`, `docs/PRD_m6_qa_contract.md`, `docs/PRD_m7_production_harness.md`, `plan.md` §4 / §11 |
 
 ## Env
 
-- `ARTICLEBOOK_LATEX_ENGINE` = `lualatex` (default) or `xelatex` (`.env.example`).
+- `ARTICLEBOOK_LATEX_ENGINE` = `lualatex` (default) or `xelatex` (see README env table).
 - `ARTICLEBOOK_CONFIG_DIR` — optional alternate directory for `models.yaml` / `agents.yaml` / `tasks.yaml`.
 
 ## Artifacts

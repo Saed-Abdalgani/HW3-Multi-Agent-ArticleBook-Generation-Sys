@@ -25,8 +25,7 @@ def run_cli_security_preflight(args: Namespace, root: Path) -> tuple[Token, Toke
     ensure_overwrite_artifacts_confirmed(
         root, assume_yes=args.yes, dry_run=args.dry_run
     )
-    if not args.stub:
-        ensure_paid_llm_confirmed(assume_yes=args.yes)
+    ensure_paid_llm_confirmed(assume_yes=args.yes)
     t_dry = set_dry_run(args.dry_run)
     t_allow = set_allow_workspace_overwrites(True)
     return t_dry, t_allow

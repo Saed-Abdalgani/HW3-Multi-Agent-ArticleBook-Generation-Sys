@@ -24,6 +24,7 @@ Expect **no output**. If a file appears, split by responsibility (new module + t
 | `shared/gatekeeper.py` | `gatekeeper_policy.py`, `gatekeeper_instrumented.py`, thin `gatekeeper.py` |
 | `m2_stub.py` | `m2_stub_constants.py`, `m2_stub_bib.py`, `m2_stub_outline.py`, `m2_stub_chapter_copy.py`, thin `m2_stub.py` |
 | `pipeline_stubs.py` | `pipeline_stub_m1.py`, `pipeline_stub_latex.py`, thin `pipeline_stubs.py` |
+| `shared/config.py` | `config_yaml.py`, `config_credentials.py`, thin `config.py` |
 | `crew/crew_builder.py` | `crew_milestone_dispatch.py`, thin `crew_builder.py` |
 | `crew/workspace_tools.py` | `workspace_m6_reply.py` (M6 tool formatting) |
 | `crew/agents.py` | `agent_factory.py`, thin `agents.py` |

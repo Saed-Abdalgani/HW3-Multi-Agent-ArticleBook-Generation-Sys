@@ -1,4 +1,4 @@
-"""Thin CLI entrypoint for milestones M1–M6 (stub + LLM)."""
+"""Thin CLI entrypoint for milestones M1–M6 (LLM crew)."""
 
 from __future__ import annotations
 
@@ -30,14 +30,9 @@ def main() -> None:
         "m5=M4+canonical multipass (biber); m6=M5+deterministic QA contract. Default: m2.",
     )
     parser.add_argument(
-        "--stub",
-        action="store_true",
-        help="Offline deterministic run (no LLM). Milestone selects stub profile.",
-    )
-    parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="M8: skip disk writes for stub pipelines; crew write_workspace_file is no-op.",
+        help="M8: skip disk writes; crew write_workspace_file is no-op.",
     )
     parser.add_argument(
         "--yes",
@@ -61,7 +56,7 @@ def main() -> None:
     t_dry, t_allow = run_cli_security_preflight(args, root)
     m9_tok, _run_id = begin_articlebook_run(
         root,
-        mode="stub" if args.stub else "llm",
+        mode="llm",
         milestone=args.milestone,
         topic=args.topic,
         language=args.language,

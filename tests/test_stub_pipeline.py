@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from articlebook.pipeline import run_stub_m1, run_stub_m2, run_stub_m3, run_stub_m4, run_stub_m5
+from articlebook.pipeline_stubs import (
+    run_stub_m1,
+    run_stub_m2,
+    run_stub_m3,
+    run_stub_m4,
+    run_stub_m5,
+)
 from articlebook.shared.paths import project_root
 from articlebook.skills_inventory import list_discovered_skills
 
@@ -54,6 +60,16 @@ def test_stub_m5_writes_m5_manifest() -> None:
     root = project_root()
     assert (root / "build" / "m5_stub_manifest.md").is_file()
     assert (root / "build" / "m5_compile_journal.json").is_file()
+
+
+def test_stub_m4_chapter_md_count_matches_generated_tex() -> None:
+    """M6.4 proxy: one assembled TeX per Markdown chapter (outline-driven structure)."""
+    run_stub_m4(topic="Hierarchy check", language="English")
+    root = project_root()
+    md_chapters = sorted((root / "content").glob("chapter_*.md"))
+    tex_chapters = sorted((root / "latex" / "chapters").glob("chapter_*.tex"))
+    assert len(md_chapters) >= 6
+    assert len(tex_chapters) == len(md_chapters)
 
 
 def test_discover_skills_names() -> None:

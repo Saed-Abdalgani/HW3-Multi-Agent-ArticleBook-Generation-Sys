@@ -6,6 +6,7 @@ import re
 from typing import Final
 
 _SK_RE: Final[re.Pattern[str]] = re.compile(r"sk-[A-Za-z0-9]{10,}", re.IGNORECASE)
+_GSK_RE: Final[re.Pattern[str]] = re.compile(r"gsk_[A-Za-z0-9]{20,}")
 _BEARER_RE: Final[re.Pattern[str]] = re.compile(
     r"bearer\s+[A-Za-z0-9\-._~+/]+=*", re.IGNORECASE
 )
@@ -18,6 +19,7 @@ def redact_for_report(text: str, *, max_chars: int = 4000) -> str:
     """Remove common secret patterns and cap length for JSON/markdown artifacts."""
     s = str(text)
     s = _SK_RE.sub("[REDACTED_SK]", s)
+    s = _GSK_RE.sub("[REDACTED_GSK]", s)
     s = _BEARER_RE.sub("Bearer [REDACTED]", s)
     s = _KEY_ASSIGN_RE.sub(lambda m: f"{m.group(1)}=[REDACTED]", s)
     if len(s) > max_chars:

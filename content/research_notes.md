@@ -1,4 +1,4 @@
-# Research notes: M5 Compile
+# Research notes: Hierarchy check
 
 ## Vetted sources (stub corpus)
 
