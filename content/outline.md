@@ -1,4 +1,4 @@
-# Outline: Hierarchy check
+# Outline: Palestine history
 
 - **Primary language:** English
 - **Base text direction:** ltr

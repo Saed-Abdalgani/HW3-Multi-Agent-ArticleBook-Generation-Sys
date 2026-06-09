@@ -12,7 +12,9 @@ from dotenv import load_dotenv
 
 from articlebook.shared.config_credentials import (
     missing_llm_api_key_message,
+    parse_llm_routes_from_env,
     resolve_llm_api_key,
+    resolve_llm_api_keys,
 )
 from articlebook.shared.config_yaml import load_models_document, rag_feature_enabled
 from articlebook.shared.paths import project_root
@@ -34,12 +36,24 @@ def load_config() -> dict[str, Any]:
     """Return model/runtime settings and API key for LLM construction (M7)."""
     doc = load_models_document()
     provider = os.getenv("ARTICLEBOOK_LLM_PROVIDER", str(doc.get("provider", "openai")))
-    api_key = resolve_llm_api_key(provider)
-    if not api_key:
-        raise ValueError(missing_llm_api_key_message(provider))
+    routes = parse_llm_routes_from_env()
+    if routes:
+        # LiteLLM resolves the real upstream from each slot's ``model`` prefix (``openrouter/``,
+        # ``groq/``, ``nvidia_nim/``, …). Keep YAML/env ``provider`` aligned with that path.
+        provider = "openai"
+        api_keys = [str(r["api_key"]) for r in routes]
+        api_key = api_keys[0]
+        model = str(routes[0]["model"])
+        llm_routes = routes
+    else:
+        api_keys = resolve_llm_api_keys(provider)
+        if not api_keys:
+            raise ValueError(missing_llm_api_key_message(provider))
+        api_key = api_keys[0]
+        model = os.getenv("MODEL_NAME", str(doc.get("model", "gpt-4-turbo")))
+        llm_routes: list[dict[str, str]] = []
     temperature = float(os.getenv("TEMPERATURE", str(doc.get("temperature", 0.7))))
     seed = int(os.getenv("SEED", str(doc.get("seed", 42))))
-    model = os.getenv("MODEL_NAME", str(doc.get("model", "gpt-4-turbo")))
     timeout = float(
         os.getenv(
             "ARTICLEBOOK_LLM_TIMEOUT_S",
@@ -58,7 +72,9 @@ def load_config() -> dict[str, Any]:
 
     return {
         "api_key": api_key,
+        "api_keys": api_keys,
         "model": model,
+        "llm_routes": llm_routes,
         "temperature": temperature,
         "seed": seed,
         "provider": provider,
@@ -74,6 +90,8 @@ def load_config_optional() -> dict[str, Any] | None:
     """Return config dict if the required API key for the active provider is set."""
     doc = load_models_document()
     provider = os.getenv("ARTICLEBOOK_LLM_PROVIDER", str(doc.get("provider", "openai")))
+    if parse_llm_routes_from_env():
+        return load_config()
     if resolve_llm_api_key(provider) is None:
         return None
     return load_config()
@@ -89,6 +107,7 @@ def write_resolved_run_stamp(cfg: dict[str, Any], *, milestone: str) -> Path:
         "milestone": milestone,
         "provider": cfg.get("provider"),
         "model": cfg.get("model"),
+        "llm_routes_slots": len(cfg.get("llm_routes") or []),
         "temperature": cfg.get("temperature"),
         "seed": cfg.get("seed"),
         "timeout_s": cfg.get("timeout"),

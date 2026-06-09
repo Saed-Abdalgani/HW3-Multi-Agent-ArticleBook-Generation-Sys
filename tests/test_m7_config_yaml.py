@@ -60,6 +60,7 @@ def test_write_resolved_run_stamp_writes_json(
     data = json.loads(path.read_text(encoding="utf-8"))
     assert data["model"] == "gpt-test"
     assert data["milestone"] == "m2"
+    assert data.get("llm_routes_slots", 0) == 0
     assert "api_key" not in data
 
 

@@ -21,7 +21,9 @@ def run_articlebook_cli_body(
     if load_config_optional() is None:
         raise SystemExit(
             "No LLM API key found for the configured provider. "
-            "Set OPENAI_API_KEY (OpenAI) or GOOGLE_API_KEY / GEMINI_API_KEY (Google Gemini), "
+            "Set OPENAI_API_KEY (optionally OPENAI_API_KEY_2 / _3), or the three "
+            "ARTICLEBOOK_*_KEY_SUFFIX variables from .env_example, or GOOGLE_API_KEY / "
+            "GEMINI_API_KEY (and _2 / _3) for Google Gemini, "
             "and match ARTICLEBOOK_LLM_PROVIDER / config/models.yaml ``provider``."
         )
     log.info(

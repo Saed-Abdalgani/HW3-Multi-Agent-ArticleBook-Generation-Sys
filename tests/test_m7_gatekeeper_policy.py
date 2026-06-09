@@ -5,10 +5,21 @@ from __future__ import annotations
 import pytest
 
 from articlebook.shared.gatekeeper import estimate_cost_usd, is_transient_llm_error
+from articlebook.shared.gatekeeper_policy import is_rate_limit_llm_error
 from articlebook.shared.output_validate import (
     validate_agent_text_output,
     validate_agent_text_output_lenient,
 )
+
+
+def test_is_rate_limit_llm_error_heuristic() -> None:
+    class RateLimitError(Exception):
+        pass
+
+    assert is_rate_limit_llm_error(RateLimitError("slow down"))
+    assert is_rate_limit_llm_error(RuntimeError("429 too many requests"))
+    assert not is_rate_limit_llm_error(ValueError("bad prompt"))
+    assert is_rate_limit_llm_error(RuntimeError("Resource exhausted"))
 
 
 def test_is_transient_llm_error_heuristic() -> None:

@@ -21,6 +21,8 @@ def create_llm(config: dict[str, Any]) -> LLM:
     temperature = float(config["temperature"])
     seed = int(config.get("seed", 42))
     api_key = str(config["api_key"])
+    api_keys = list(config.get("api_keys") or [api_key])
+    llm_routes = list(config.get("llm_routes") or [])
     timeout = config.get("timeout")
     provider = str(config.get("provider", "openai"))
     gate = config.get("gatekeeper") or {}
@@ -50,5 +52,7 @@ def create_llm(config: dict[str, Any]) -> LLM:
         gk_max_delay_s=float(gate.get("retry_max_delay_s", 30.0)),
         gk_min_interval_s=float(gate.get("rate_limit_min_interval_s", 0.0)),
         gk_cost_config=config,
+        gk_api_keys=api_keys,
+        gk_llm_routes=llm_routes if len(llm_routes) > 1 else None,
         **llm_kwargs,
     )

@@ -6,12 +6,13 @@ import logging
 import random
 import threading
 import time
-from typing import Any
+from typing import Any, Self, cast
 
 from crewai import LLM
 
 from articlebook.shared.gatekeeper_policy import (
     estimate_cost_usd,
+    is_rate_limit_llm_error,
     is_transient_llm_error,
     pricing_for_model,
     snapshot_usage,
@@ -25,6 +26,18 @@ logger = logging.getLogger(__name__)
 class InstrumentedLLM(LLM):
     """CrewAI ``LLM`` with retries, soft rate limiting, and structured call logging."""
 
+    def __new__(cls, model: str, is_litellm: bool = False, **kwargs: Any) -> Self:
+        """CrewAI's ``LLM.__new__`` returns native provider classes (e.g. ``OpenAICompletion``),
+        which drops this subclass and ignores ``InstrumentedLLM.call``. Forcing
+        ``is_litellm=True`` keeps construction on ``InstrumentedLLM`` so gatekeeper logic runs
+        (requires ``litellm`` — declared in ``pyproject.toml``).
+        """
+        if cls is InstrumentedLLM:
+            merged = dict(kwargs)
+            merged["is_litellm"] = True
+            return cast(Self, LLM.__new__(cls, model, **merged))
+        return cast(Self, LLM.__new__(cls, model, is_litellm=is_litellm, **kwargs))
+
     def __init__(
         self,
         *,
@@ -33,8 +46,12 @@ class InstrumentedLLM(LLM):
         gk_max_delay_s: float = 30.0,
         gk_min_interval_s: float = 0.0,
         gk_cost_config: dict[str, Any] | None = None,
+        gk_api_keys: list[str] | None = None,
+        gk_llm_routes: list[dict[str, str]] | None = None,
         **llm_kwargs: Any,
     ) -> None:
+        llm_kwargs = dict(llm_kwargs)
+        llm_kwargs.setdefault("is_litellm", True)
         super().__init__(**llm_kwargs)
         self._gk_retry_max = max(1, int(gk_retry_max))
         self._gk_base_delay_s = float(gk_base_delay_s)
@@ -43,9 +60,49 @@ class InstrumentedLLM(LLM):
         self._gk_cost_config = gk_cost_config or {}
         self._gk_lock = threading.Lock()
         self._gk_last_call_start = 0.0
+        self._gk_routes: list[tuple[str, str]] | None = None
+        if gk_llm_routes and len(gk_llm_routes) > 1:
+            built: list[tuple[str, str]] = []
+            for row in gk_llm_routes:
+                k = str(row.get("api_key", "")).strip()
+                m = str(row.get("model", "")).strip()
+                if k and m:
+                    built.append((k, m))
+            if len(built) > 1:
+                self._gk_routes = built
+        raw_keys = list(gk_api_keys) if gk_api_keys else []
+        cleaned = [str(k).strip() for k in raw_keys if str(k).strip()]
+        if not cleaned:
+            ak = llm_kwargs.get("api_key")
+            if ak:
+                cleaned = [str(ak).strip()]
+        self._gk_api_keys = cleaned
+        self._gk_key_index = 0
+
+    def _gk_slot_count(self) -> int:
+        if self._gk_routes:
+            return len(self._gk_routes)
+        return len(self._gk_api_keys)
+
+    def _gk_set_active_slot(self, index: int) -> None:
+        if self._gk_routes:
+            self._gk_key_index = max(0, min(int(index), len(self._gk_routes) - 1))
+            key, model = self._gk_routes[self._gk_key_index]
+            setattr(self, "api_key", key)
+            setattr(self, "model", model)
+            return
+        self._gk_set_active_key(index)
+
+    def _gk_set_active_key(self, index: int) -> None:
+        if not self._gk_api_keys:
+            return
+        self._gk_key_index = max(0, min(int(index), len(self._gk_api_keys) - 1))
+        key = self._gk_api_keys[self._gk_key_index]
+        setattr(self, "api_key", key)
 
     def call(self, *args: Any, **kwargs: Any) -> Any:
         self._gk_rate_limit_wait()
+        self._gk_set_active_slot(0)
         pricing = pricing_for_model(self._gk_cost_config, str(self.model))
         attempt = 0
         last_exc: BaseException | None = None
@@ -57,6 +114,20 @@ class InstrumentedLLM(LLM):
                 result = super().call(*args, **kwargs)
             except BaseException as exc:
                 last_exc = exc
+                n_slots = self._gk_slot_count()
+                if (
+                    n_slots > 1
+                    and is_rate_limit_llm_error(exc)
+                    and self._gk_key_index < n_slots - 1
+                ):
+                    self._gk_set_active_slot(self._gk_key_index + 1)
+                    logger.warning(
+                        "Gatekeeper: rate-limited on LLM slot %s/%s; retrying with next key+model",
+                        self._gk_key_index + 1,
+                        n_slots,
+                    )
+                    attempt -= 1
+                    continue
                 if attempt >= self._gk_retry_max or not is_transient_llm_error(exc):
                     logger.error(
                         "Gatekeeper: LLM call failed attempt=%s/%s err=%s: %s",
@@ -84,6 +155,7 @@ class InstrumentedLLM(LLM):
                     delay,
                 )
                 time.sleep(delay)
+                self._gk_set_active_slot(0)
                 continue
 
             dt = time.perf_counter() - t0

@@ -6,8 +6,9 @@ Generate a 15–20 page LaTeX book/article using **CrewAI** (see `prd.md`, `plan
 
 - **Python** 3.11–3.13 (see `pyproject.toml`)
 - **uv** for environments and commands ([https://docs.astral.sh/uv/](https://docs.astral.sh/uv/))
+- **`litellm`** (declared in `pyproject.toml`) — required for the **instrumented** gatekeeper LLM path (retries, multi-key failover, usage logs). CrewAI may use the native OpenAI SDK for non-instrumented `LLM` construction.
 - **MiKTeX** (Windows) with `lualatex` and **`biber`** on `PATH` for real multi-pass builds (without them, the compile driver still writes journals; M6 can use `--m6-allow-missing-pdf` for static QA only)
-- **LLM API key** — `OPENAI_API_KEY` for OpenAI, or **`GOOGLE_API_KEY`** / `GEMINI_API_KEY` when `provider` is `google` in `config/models.yaml` or `ARTICLEBOOK_LLM_PROVIDER=google`
+- **LLM API keys** — either legacy vars (`OPENAI_API_KEY` / `GOOGLE_API_KEY` / …) **or** a single **`ARTICLEBOOK_LLM_ROUTES`** line for mixed OpenRouter/Groq/NVIDIA (see env table). When routes are set, the resolved **`provider` is always `openai`** (LiteLLM); real upstreams follow each slot’s model prefix.
 
 ## Install
 
@@ -15,18 +16,25 @@ Generate a 15–20 page LaTeX book/article using **CrewAI** (see `prd.md`, `plan
 uv sync --all-groups
 ```
 
-Create a **`.env`** file in the repo root (gitignored — never commit it) with at least your provider’s API key. See **Environment variables** below.
+Create a **`.env`** file in the repo root (gitignored — never commit it). Copy **`.env_example`** to `.env` and fill in your keys. See **Environment variables** below.
 
 ### Environment variables (local `.env` only)
 
 | Variable | Purpose |
 |----------|---------|
-| `OPENAI_API_KEY` | OpenAI (when `provider` / `ARTICLEBOOK_LLM_PROVIDER` is OpenAI-compatible). |
-| `GOOGLE_API_KEY` or `GEMINI_API_KEY` | Google Gemini when `provider` is `google` (see `config_credentials.py`). |
+| `OPENAI_API_KEY` | Primary OpenAI key (always used first on each LLM call when set). |
+| `OPENAI_API_KEY_2`, `OPENAI_API_KEY_3` | Optional extra OpenAI keys: on HTTP rate-limit style errors, the gatekeeper switches to the next key in order before backoff. |
+| `GOOGLE_API_KEY` or `GEMINI_API_KEY` | Primary Google Gemini key (first in chain for that family). |
+| `GOOGLE_API_KEY_2`, `GOOGLE_API_KEY_3` (or `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3`) | Optional failover keys for Google runs (same rotation behavior). |
 | `MODEL_NAME`, `TEMPERATURE`, `SEED` | Overrides for `config/models.yaml` defaults. |
 | `ARTICLEBOOK_LLM_PROVIDER` | e.g. `openai` or `google`. |
 | `ARTICLEBOOK_LLM_TIMEOUT_S` | LLM timeout (seconds). |
 | `ARTICLEBOOK_CONFIG_DIR` | Alternate directory for `config/*.yaml`. |
+| `ARTICLEBOOK_OPENROUTER_KEY_SUFFIX` | With Groq + NVIDIA suffixes, builds routes automatically: paste only the part after `sk-or-v1-` (or the full key). |
+| `ARTICLEBOOK_GROQ_KEY_SUFFIX` | Same for Groq: paste after `gsk_` or full `gsk_…` key. |
+| `ARTICLEBOOK_NVIDIA_KEY_SUFFIX` | Same for NVIDIA: paste after `nvapi-` or full `nvapi-…` key. |
+| `ARTICLEBOOK_ROUTE_MODELS` | Optional override: exactly **three** LiteLLM model ids separated by `;` (NVIDIA slot, OpenRouter slot, Groq slot). Defaults are set in code if unset. |
+| `ARTICLEBOOK_LLM_ROUTES` | Advanced: explicit `key\|model;…` list (overrides suffix mode if non-empty). See **`.env_example`** for the simple triple-key layout. |
 | `ARTICLEBOOK_GK_RETRY_MAX`, `ARTICLEBOOK_GK_MIN_INTERVAL_S` | Gatekeeper knobs. |
 | `ARTICLEBOOK_RAG_ENABLED` | `true` / `1` to force RAG on (YAML is primary). |
 | `ARTICLEBOOK_LATEX_ENGINE` | `lualatex` (default) or `xelatex`. |
@@ -35,9 +43,15 @@ Create a **`.env`** file in the repo root (gitignored — never commit it) with 
 
 Deterministic workspace fixtures are produced by **`articlebook.pipeline_stubs`** (`run_stub_m2` … `run_stub_m6`). The pytest suite calls these modules directly; the **`articlebook` CLI no longer exposes `--stub`**.
 
+### Multi-provider keys (OpenRouter + Groq + NVIDIA)
+
+Copy **`.env_example`** to **`.env`** and fill in **`ARTICLEBOOK_OPENROUTER_KEY_SUFFIX`**, **`ARTICLEBOOK_GROQ_KEY_SUFFIX`**, and **`ARTICLEBOOK_NVIDIA_KEY_SUFFIX`** (secret after each vendor prefix, or paste the full key). The app prepends `sk-or-v1-`, `gsk_`, and `nvapi-` when needed and uses three default LiteLLM models (override with **`ARTICLEBOOK_ROUTE_MODELS`**).
+
+Power users can still set **`ARTICLEBOOK_LLM_ROUTES`** to a full `key|model;…` string; if that variable is non-empty, it wins over the suffix shortcut.
+
 ### M7 — YAML config + Gatekeeper (Phase 7)
 
-- **`config/models.yaml`** — provider, model defaults, `timeout_seconds`, `gatekeeper.*` retries/backoff/rate-limit knobs, `rag.enabled`, optional `pricing_per_million_tokens` for **rough** cost logs.
+- **`config/models.yaml`** — provider, model defaults, `timeout_seconds`, `gatekeeper.*` retries/backoff/rate-limit knobs, `rag.enabled`, optional `pricing_per_million_tokens` for **rough** cost logs. Multi-key failover requires **`gatekeeper.instrumented: true`** (default): plain `LLM` construction does not rotate keys.
 - **`config/agents.yaml`** — role/goal/backstory + skill folder names (tools stay code-defined).
 - **`config/tasks.yaml`** — optional `overrides.<milestone>.<task_id>` for `description` / `expected_output` (M2 wired; `{topic}` / `{language}` placeholders supported).
 - **`ARTICLEBOOK_CONFIG_DIR`** — point at an alternate config directory (see table above).
@@ -117,7 +131,7 @@ Optional local RAG (M9-OPT): `uv sync --extra rag` then enable `rag.enabled` in 
 
 ## Troubleshooting
 
-- **No LLM API key / wrong provider:** set `OPENAI_API_KEY` or `GOOGLE_API_KEY` to match `provider` in `config/models.yaml` (or override with `ARTICLEBOOK_LLM_PROVIDER`). For Gemini via LiteLLM/CrewAI, use a model id such as `gemini/gemini-2.0-flash` in `MODEL_NAME` or YAML.
+- **No LLM API key / wrong provider:** set `OPENAI_API_KEY` (and optionally `_2` / `_3` for failover) or `GOOGLE_API_KEY` / `GEMINI_API_KEY` to match `provider` in `config/models.yaml` (or override with `ARTICLEBOOK_LLM_PROVIDER`). For Gemini via LiteLLM/CrewAI, use a model id such as `gemini/gemini-2.0-flash` in `MODEL_NAME` or YAML.
 - **`lualatex not found`:** install MiKTeX and ensure `lualatex` / `biber` are on `PATH` (on Windows the driver also prepends the default MiKTeX user `bin` when engines are missing from `PATH`).
 - **Want XeLaTeX instead:** set `ARTICLEBOOK_LATEX_ENGINE=xelatex` in the environment.
 - **Import errors running `python main.py` outside `uv`:** run via `uv run` so the `articlebook` package from `src/` is on the environment path.

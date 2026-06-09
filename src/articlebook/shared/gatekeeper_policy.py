@@ -44,6 +44,27 @@ def estimate_cost_usd(delta: dict[str, int], pricing: dict[str, float]) -> float
     return (p * pricing["input"] + c * pricing["output"]) / 1_000_000.0
 
 
+def is_rate_limit_llm_error(exc: BaseException) -> bool:
+    """True when the failure is likely an API quota / rate limit (rotate API key if configured)."""
+    name = type(exc).__name__
+    if name in {"RateLimitError"}:
+        return True
+    msg = str(exc).casefold()
+    if "429" in msg:
+        return True
+    needles = (
+        "rate limit",
+        "ratelimit",
+        "too many requests",
+        "resource exhausted",
+        "quota exceeded",
+        "requests per min",
+        "tpm",
+        "rpm",
+    )
+    return any(n in msg for n in needles)
+
+
 def is_transient_llm_error(exc: BaseException) -> bool:
     """Heuristic: retry only for likely-transient provider/network failures."""
     name = type(exc).__name__
