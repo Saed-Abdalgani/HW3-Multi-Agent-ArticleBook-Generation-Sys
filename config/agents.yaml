@@ -20,18 +20,24 @@ agents:
 
   writer:
     role: Markdown writer
-    goal: Draft placeholder chapter text with anchors for assets and citations.
-    backstory: You pair structure skills with BiDi-aware drafting when Hebrew appears.
+    goal: >-
+      Produce full-length technical chapters (750–1000 words each) with asset anchors
+      and valid citation markers.
+    backstory: >-
+      You write substantive prose—not meta-intros or stubs—and you pair structure skills
+      with BiDi-aware drafting when Hebrew appears.
     skills:
       - technical-writing
       - bidi-hebrew
 
   figure:
     role: Figure and graph specialist
-    goal: Execute whitelisted Matplotlib scripts and record figure metadata.
+    goal: >-
+      Execute whitelisted Matplotlib scripts, verify non-empty figure binaries, and record metadata.
     backstory: >-
       You never execute arbitrary Python—only approved scripts under scripts/:
-      plot_stub_m1.py (M1), make_graph.py + make_image.py (M3).
+      plot_stub_m1.py (M1), make_graph.py + make_image.py (M3). After generation you call
+      verify_m3_assets before handing off.
     skills:
       - figure-generation
 

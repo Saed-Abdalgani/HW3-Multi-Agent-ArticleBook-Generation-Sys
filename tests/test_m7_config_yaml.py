@@ -141,6 +141,14 @@ def test_load_config_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
     monkeypatch.setenv("MODEL_NAME", "from-env")
     monkeypatch.setenv("ARTICLEBOOK_LLM_TIMEOUT_S", "77")
+    # Isolated from developer .env: routes win over MODEL_NAME when any are set.
+    for key in (
+        "ARTICLEBOOK_LLM_ROUTES",
+        "ARTICLEBOOK_OPENROUTER_KEY_SUFFIX",
+        "ARTICLEBOOK_GROQ_KEY_SUFFIX",
+        "ARTICLEBOOK_NVIDIA_KEY_SUFFIX",
+    ):
+        monkeypatch.delenv(key, raising=False)
     cfg = load_config()
     assert cfg["model"] == "from-env"
     assert cfg["timeout"] == 77.0

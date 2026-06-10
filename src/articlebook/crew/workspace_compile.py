@@ -31,7 +31,15 @@ def compile_lualatex_once(root: Path, *, log_filename: str = "m1_lualatex_once.l
         f"-output-directory={build_dir}",
         "main.tex",
     ]
-    proc = subprocess.run(cmd, cwd=str(latex_dir), capture_output=True, text=True, check=False)
+    proc = subprocess.run(
+        cmd,
+        cwd=str(latex_dir),
+        capture_output=True,
+        text=True,
+        check=False,
+        encoding="utf-8",
+        errors="replace",
+    )
     log_path = build_dir / log_filename
     log_path.write_text(proc.stdout + "\n" + proc.stderr, encoding="utf-8", errors="replace")
     logger.info("lualatex.once rc=%s log=%s", proc.returncode, log_path.relative_to(root))
@@ -50,6 +58,8 @@ def run_matplotlib_stub_script(root: Path) -> str:
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
+        errors="replace",
     )
     logger.info("matplotlib.stub rc=%s", proc.returncode)
     tail = (proc.stderr or proc.stdout or "")[-2000:]

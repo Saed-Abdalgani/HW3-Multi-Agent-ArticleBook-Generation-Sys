@@ -15,15 +15,21 @@ from articlebook.crew.workspace_tools import (
     run_matplotlib_stub,
     verify_m3_assets,
     write_workspace_file,
+    write_workspace_files_batch,
 )
 from articlebook.rag.wiring import optional_rag_research_tools
 
 
 def build_agents(llm: LLM) -> dict[str, Agent]:
     """Create ordered agents for M1/M2/M3 pipelines (skills + sandboxed tools)."""
-    read_write = [write_workspace_file, read_workspace_file]
+    read_write = [write_workspace_file, write_workspace_files_batch, read_workspace_file]
     research_tools = read_write + optional_rag_research_tools()
-    figure_tools = read_write + [run_matplotlib_stub, run_m3_asset_generators, run_lualatex_once]
+    figure_tools = read_write + [
+        run_matplotlib_stub,
+        run_m3_asset_generators,
+        verify_m3_assets,
+        run_lualatex_once,
+    ]
     compile_tools = [run_lualatex_once, run_latex_canonical_compile, read_workspace_file]
     qa_tools = read_write + [verify_m3_assets, run_m6_contract_checks]
     return {
@@ -49,8 +55,14 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
             llm,
             "writer",
             role="Markdown writer",
-            goal="Draft placeholder chapter text with anchors for assets and citations.",
-            backstory="You pair structure skills with BiDi-aware drafting when Hebrew appears.",
+            goal=(
+                "Produce full-length technical chapters (750–1000 words each) with asset "
+                "anchors and valid citation markers."
+            ),
+            backstory=(
+                "You write substantive prose—not meta-intros or stubs—and you pair structure "
+                "skills with BiDi-aware drafting when Hebrew appears."
+            ),
             tools=read_write,
             skills=["technical-writing", "bidi-hebrew"],
         ),
@@ -61,7 +73,8 @@ def build_agents(llm: LLM) -> dict[str, Agent]:
             goal="Execute whitelisted Matplotlib scripts and record figure metadata.",
             backstory=(
                 "You never execute arbitrary Python—only approved scripts under scripts/: "
-                "plot_stub_m1.py (M1), make_graph.py + make_image.py (M3)."
+                "plot_stub_m1.py (M1), make_graph.py + make_image.py (M3). "
+                "After generation you confirm binaries via verify_m3_assets before handing off."
             ),
             tools=figure_tools,
             skills=["figure-generation"],

@@ -41,10 +41,18 @@ def parse_llm_routes_from_env() -> list[dict[str, str]] | None:
     ``ARTICLEBOOK_GROQ_KEY_SUFFIX``, and ``ARTICLEBOOK_NVIDIA_KEY_SUFFIX`` to the secret
     part *after* the usual prefix (``sk-or-v1-``, ``gsk_``, ``nvapi-``). If a value already
     includes its prefix, it is left unchanged. Models default to a sensible triple; override
-    with ``ARTICLEBOOK_ROUTE_MODELS`` (three ids separated by ``;``).
+    with ``ARTICLEBOOK_ROUTE_MODELS`` (three ids separated by ``;``): **slot 1 = Groq**,
+    **slot 2 = OpenRouter**, **slot 3 = default Groq backup** (Llama 4 Scout — higher TPM than
+    8B Instant for large CrewAI contexts; tried in that order on each LLM call).
+    Each slot's API key is chosen from the model id prefix (``groq/`` → Groq key, ``openrouter/`` →
+    OpenRouter key, ``nvidia_nim/`` → NVIDIA key), so slot 3 may still use NVIDIA when you set
+    ``ARTICLEBOOK_ROUTE_MODELS`` accordingly. OpenRouter is before the last-resort slot because
+    many NVIDIA NIM chat models reject **parallel** tool calls (CrewAI may issue several at once).
 
-    The first slot is always tried first on each LLM call; on rate-limit style errors
-    the gatekeeper advances to the next ``key|model`` pair.
+    The first slot is always tried first on each LLM call; on **429 / throttling**, **402 /
+    insufficient-account-credits**, **Groq ``tool_use_failed``** (invalid tool / XML-style tools),
+    or similar quota-style errors the gatekeeper advances to the
+    next ``key|model`` pair (see ``is_llm_route_failover_error`` in ``gatekeeper_policy``).
 
     ``MODEL_NAME`` is ignored when routes are active (explicit or suffix-built).
     """
@@ -71,7 +79,11 @@ def parse_llm_routes_from_env() -> list[dict[str, str]] | None:
 
 
 _DEFAULT_TRIPLE_MODELS = (
-    "nvidia_nim/meta/llama-3.1-70b-instruct;openrouter/openai/gpt-4o;groq/llama-3.3-70b-versatile"
+    "groq/llama-3.3-70b-versatile;"
+    "openrouter/openai/gpt-4o-mini;"
+    # Llama 3.1 8B Instant TPM is too low for large CrewAI tool+context payloads (~15–20k
+    # tokens). Scout has a much higher TPM budget on Groq free tier (see Groq rate limits).
+    "groq/meta-llama/llama-4-scout-17b-16e-instruct"
 )
 
 
@@ -96,6 +108,19 @@ def _full_nvidia_key(secret: str) -> str:
     return f"nvapi-{s}"
 
 
+def _api_key_for_litellm_model(model: str, *, gq_s: str, or_s: str, nv_s: str) -> str:
+    """Pick the env-backed API key for a LiteLLM ``provider/model`` id (suffix triple)."""
+    low = model.strip().casefold()
+    if low.startswith("openrouter/"):
+        return _full_openrouter_key(or_s)
+    if low.startswith("nvidia_nim/") or low.startswith("nvidia/"):
+        return _full_nvidia_key(nv_s)
+    if low.startswith("groq/"):
+        return _full_groq_key(gq_s)
+    # Unknown prefix: prefer Groq (first slot family) so routes still run.
+    return _full_groq_key(gq_s)
+
+
 def _llm_routes_from_key_suffixes() -> list[dict[str, str]] | None:
     or_s = os.getenv("ARTICLEBOOK_OPENROUTER_KEY_SUFFIX", "").strip()
     gq_s = os.getenv("ARTICLEBOOK_GROQ_KEY_SUFFIX", "").strip()
@@ -107,12 +132,12 @@ def _llm_routes_from_key_suffixes() -> list[dict[str, str]] | None:
     if len(parts) != 3:
         raise ValueError(
             "ARTICLEBOOK_ROUTE_MODELS must list exactly 3 LiteLLM model ids separated by ';' "
-            "(NVIDIA slot, OpenRouter slot, Groq slot)."
+            "(slot1=Groq, slot2=OpenRouter, slot3=backup; keys are inferred from each model's prefix)."
         )
     return [
-        {"api_key": _full_nvidia_key(nv_s), "model": parts[0]},
-        {"api_key": _full_openrouter_key(or_s), "model": parts[1]},
-        {"api_key": _full_groq_key(gq_s), "model": parts[2]},
+        {"api_key": _api_key_for_litellm_model(parts[0], gq_s=gq_s, or_s=or_s, nv_s=nv_s), "model": parts[0]},
+        {"api_key": _api_key_for_litellm_model(parts[1], gq_s=gq_s, or_s=or_s, nv_s=nv_s), "model": parts[1]},
+        {"api_key": _api_key_for_litellm_model(parts[2], gq_s=gq_s, or_s=or_s, nv_s=nv_s), "model": parts[2]},
     ]
 
 

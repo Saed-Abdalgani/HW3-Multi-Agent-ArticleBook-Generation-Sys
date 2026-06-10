@@ -1,4 +1,4 @@
-# Research notes: Palestine history
+# Research notes: Hierarchy check
 
 ## Vetted sources (stub corpus)
 

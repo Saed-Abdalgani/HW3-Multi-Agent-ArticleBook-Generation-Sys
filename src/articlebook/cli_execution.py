@@ -13,10 +13,12 @@ from articlebook.shared.paths import project_root
 
 def run_articlebook_cli_body(
     args: Namespace, log: logging.Logger
-) -> tuple[bool, str | None, bool | None]:
+) -> tuple[bool, str | None, bool | None, str | None]:
     """Execute the LLM crew for the selected milestone.
 
-    Returns ``(success, crew_result_text, qa_passed_or_none)``. May raise ``SystemExit``.
+    Returns ``(success, crew_result_text, qa_passed_or_none, diagnostic_error_or_none)``.
+    ``diagnostic_error_or_none`` is set when the crew returns but M6 QA fails (no ``SystemExit``).
+    May still raise ``SystemExit`` for preflight / missing API key.
     """
     if load_config_optional() is None:
         raise SystemExit(
@@ -41,6 +43,7 @@ def run_articlebook_cli_body(
             project_root(),
             log_prefix="m6_crew",
             allow_missing_pdf=args.m6_allow_missing_pdf,
+            skip_page_count=args.m6_relax_page_count,
         )
         qa_passed = qa.passed
         print(
@@ -48,5 +51,8 @@ def run_articlebook_cli_body(
             f"PASS={qa.passed}  report=build/m6_qa_report.md"
         )
         if not qa.passed:
-            raise SystemExit(1)
-    return True, str(result), qa_passed
+            head = "; ".join(qa.errors[:25])
+            tail = f" (+{len(qa.errors) - 25} more)" if len(qa.errors) > 25 else ""
+            diag = f"M6 contract QA failed ({len(qa.errors)} errors). First: {head}{tail}"
+            return False, str(result), False, diag
+    return True, str(result), qa_passed, None

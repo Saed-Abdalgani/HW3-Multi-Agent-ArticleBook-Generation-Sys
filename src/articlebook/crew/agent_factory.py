@@ -36,6 +36,10 @@ def build_agent(
     resolved_skills = (
         [skill_path(str(name)) for name in skill_names] if isinstance(skill_names, list) else None
     )
+    extra_kwargs: dict = {}
+    if agent_id in {"research", "writer"}:
+        # Extra tool rounds: models often emit Final Answer before calling write tools.
+        extra_kwargs["max_iter"] = 35
     return Agent(
         llm=llm,
         role=str(merged["role"]),
@@ -44,4 +48,5 @@ def build_agent(
         tools=merged["tools"],
         verbose=bool(merged.get("verbose", True)),
         skills=resolved_skills,
+        **extra_kwargs,
     )

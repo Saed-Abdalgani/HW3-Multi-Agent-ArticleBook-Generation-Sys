@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper,twoside]{book}
+\documentclass[12pt,a4paper,twoside,openany]{book}
 % --- M4: preamble ---
 \usepackage{fontspec}
 \usepackage{polyglossia}
@@ -16,7 +16,7 @@
 \usepackage[backend=biber,style=numeric-comp,sorting=nyt]{biblatex}
 \addbibresource{references.bib}
 \usepackage{hyperref}
-\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue,pdftitle={Palestine history},pdfauthor={Multi-Agent ArticleBook}}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue,pdftitle={Hierarchy check},pdfauthor={Multi-Agent ArticleBook}}
 \usepackage[nameinlink,capitalize]{cleveref}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -25,7 +25,7 @@
 \fancyhead[LO]{\nouppercase{\rightmark}}
 \fancyhead[RE]{\nouppercase{\leftmark}}
 \renewcommand{\chaptermark}[1]{\markboth{\chaptername\ \thechapter.\ #1}{}}
-\title{Palestine history}
+\title{Hierarchy check}
 \author{Multi-Agent ArticleBook}
 \date{\today}
 \begin{document}
@@ -33,7 +33,7 @@
 \begin{titlepage}
 \centering
 \vspace*{2cm}
-{\Huge\bfseries Palestine history\par}
+{\Huge\bfseries Hierarchy check\par}
 \vspace{1.2cm}
 {\LARGE Thematic cover (M4)\par}
 \vspace{0.6cm}
@@ -43,16 +43,19 @@
 \vspace{0.5cm}
 {\large \today\par}
 \end{titlepage}
+% M6: keep TOC compact — Markdown ## becomes \section; listing them can add many pages.
+\setcounter{tocdepth}{0}
 \tableofcontents
 \listoffigures
 \listoftables
 \mainmatter
-\input{chapters/chapter_01_scope}
-\input{chapters/chapter_02_markdown_first}
-\input{chapters/chapter_03_agents_and_crews}
+\input{chapters/chapter_1}
+\input{chapters/chapter_2}
+\input{chapters/chapter_3}
+\input{chapters/chapter_4}
+\input{chapters/chapter_5}
+\input{chapters/chapter_6}
 \input{chapters/chapter_04_bidi_technical_note}
-\input{chapters/chapter_05_latex_path}
-\input{chapters/chapter_06_conclusion}
 \input{chapters/m3_fr9_showcase}
 \backmatter
 \printbibliography[title={References}]

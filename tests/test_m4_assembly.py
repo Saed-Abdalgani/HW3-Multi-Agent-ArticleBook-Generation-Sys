@@ -4,7 +4,36 @@ from pathlib import Path
 
 from articlebook.inputs import validate_topic_language
 from articlebook.m4_assembly import _convert_markdown_line, markdown_chapter_to_tex
+from articlebook.m4_chapters import discover_chapter_md
 from articlebook.m4_main_tex import write_main_tex
+
+
+def test_discover_prefers_six_topic_chapter_files(tmp_path: Path) -> None:
+    (tmp_path / "content").mkdir()
+    for i in range(1, 7):
+        (tmp_path / "content" / f"chapter_{i}.md").write_text(f"# Topic {i}\n\nBody.\n", encoding="utf-8")
+    (tmp_path / "content" / "chapter_01_scope.md").write_text("# Template\n", encoding="utf-8")
+    names = [p.name for p in discover_chapter_md(tmp_path)]
+    assert names == [f"chapter_{i}.md" for i in range(1, 7)]
+
+
+def test_discover_appends_bidi_note_after_six_topic_chapters(tmp_path: Path) -> None:
+    (tmp_path / "content").mkdir()
+    for i in range(1, 7):
+        (tmp_path / "content" / f"chapter_{i}.md").write_text(f"# T{i}\n", encoding="utf-8")
+    (tmp_path / "content" / "chapter_04_bidi_technical_note.md").write_text("# BiDi\n\nעברית\n", encoding="utf-8")
+    names = [p.name for p in discover_chapter_md(tmp_path)]
+    assert names[-1] == "chapter_04_bidi_technical_note.md"
+    assert len(names) == 7
+
+
+def test_discover_stub_layout_without_six_topic_files(tmp_path: Path) -> None:
+    (tmp_path / "content").mkdir()
+    (tmp_path / "content" / "chapter_01_scope.md").write_text("# A\n", encoding="utf-8")
+    (tmp_path / "content" / "chapter_1.md").write_text("# Only one topic file\n", encoding="utf-8")
+    paths = discover_chapter_md(tmp_path)
+    assert len(paths) == 2
+    assert sorted(p.name for p in paths) == ["chapter_01_scope.md", "chapter_1.md"]
 
 
 def test_pandoc_cite_to_parencite() -> None:
@@ -52,3 +81,5 @@ def test_main_tex_rtl_for_hebrew(tmp_path: Path) -> None:
     en_tex = (tmp_path / "latex" / "main.tex").read_text(encoding="utf-8")
     assert "\\setdefaultlanguage{english}" in en_tex
     assert "\\setotherlanguage{hebrew}" in en_tex
+    assert r"\setcounter{tocdepth}{0}" in en_tex
+    assert "openany" in en_tex

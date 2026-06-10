@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,6 +10,13 @@ from pathlib import Path
 from articlebook.latex_compile.cmd import run_cmd_capture_log
 from articlebook.latex_compile.env import biber_available
 from articlebook.latex_compile.types import CompilePassRecord, CompileReport, LaTeXEngine
+
+
+def copy_bib_files_latex_to_build(latex_dir: Path, build_dir: Path) -> None:
+    """Mirror ``latex/*.bib`` into ``build/`` so ``biber`` (cwd build) resolves ``\\addbibresource`` paths."""
+    build_dir.mkdir(parents=True, exist_ok=True)
+    for bib in sorted(latex_dir.glob("*.bib")):
+        shutil.copy2(bib, build_dir / bib.name)
 
 
 @dataclass
@@ -63,6 +71,9 @@ class PassRunner:
                 )
             )
             return subprocess.CompletedProcess(cmd, 1, "", msg)
+
+        # LuaLaTeX writes the .bcf into build/; biber resolves relative bib paths from there.
+        copy_bib_files_latex_to_build(self.latex_dir, self.build_dir)
 
         proc = run_cmd_capture_log(cmd, cwd=self.build_dir, log_path=log_path)
         self.report.passes.append(

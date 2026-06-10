@@ -25,7 +25,18 @@ def create_llm(config: dict[str, Any]) -> LLM:
     llm_routes = list(config.get("llm_routes") or [])
     timeout = config.get("timeout")
     provider = str(config.get("provider", "openai"))
-    gate = config.get("gatekeeper") or {}
+    gate = dict(config.get("gatekeeper") or {})
+    if len(llm_routes) > 1:
+        # Each LLM call starts at slot 1; give enough attempts for throttles + failover across slots.
+        n = len(llm_routes)
+        gate["retry_max_attempts"] = max(int(gate.get("retry_max_attempts", 4)), 4 + n * 2)
+        models_only = ", ".join(str(r.get("model", "")) for r in llm_routes)
+        logger.info(
+            "Gatekeeper: creating LLM with %s-route failover (order=%s); retry_max_attempts=%s",
+            n,
+            models_only,
+            gate["retry_max_attempts"],
+        )
     logger.info(
         "Gatekeeper: creating LLM provider=%s model=%s temperature=%s seed=%s timeout=%s",
         provider,
@@ -42,6 +53,9 @@ def create_llm(config: dict[str, Any]) -> LLM:
     }
     if timeout is not None:
         llm_kwargs["timeout"] = float(timeout)
+    mt = config.get("max_tokens")
+    if mt is not None:
+        llm_kwargs["max_tokens"] = int(mt)
 
     if not gate.get("instrumented", True):
         return LLM(**llm_kwargs)

@@ -12,15 +12,37 @@ from crewai import LLM
 
 from articlebook.shared.gatekeeper_policy import (
     estimate_cost_usd,
-    is_rate_limit_llm_error,
+    is_llm_route_failover_error,
     is_transient_llm_error,
     pricing_for_model,
+    provider_suggested_retry_delay_seconds,
+    should_reset_llm_route_chain_on_transient,
     snapshot_usage,
     usage_delta,
 )
 from articlebook.shared.observability_llm import record_llm_fail, record_llm_ok
 
 logger = logging.getLogger(__name__)
+
+# CrewAI may set Anthropic-style keys on chat dicts; Groq rejects them (CrewAI #5886, LiteLLM Groq).
+_LITELLM_MESSAGE_KEYS_STRICT_APIS_DROP = frozenset({"cache_breakpoint", "provider_specific_fields"})
+
+
+def strip_provider_specific_message_keys(messages: Any) -> Any:
+    """Shallow-copy ``messages`` without keys strict OpenAI-compatible APIs (e.g. Groq) reject."""
+    if messages is None or isinstance(messages, str):
+        return messages
+    if not isinstance(messages, list):
+        return messages
+    out: list[Any] = []
+    for item in messages:
+        if isinstance(item, dict):
+            out.append(
+                {k: v for k, v in item.items() if k not in _LITELLM_MESSAGE_KEYS_STRICT_APIS_DROP}
+            )
+        else:
+            out.append(item)
+    return out
 
 
 class InstrumentedLLM(LLM):
@@ -103,6 +125,13 @@ class InstrumentedLLM(LLM):
     def call(self, *args: Any, **kwargs: Any) -> Any:
         self._gk_rate_limit_wait()
         self._gk_set_active_slot(0)
+        # Groq rejects ``cache_breakpoint`` / ``provider_specific_fields`` on message dicts (CrewAI #5886).
+        args_list = list(args)
+        if args_list:
+            args_list[0] = strip_provider_specific_message_keys(args_list[0])
+            args = tuple(args_list)
+        elif "messages" in kwargs:
+            kwargs = {**kwargs, "messages": strip_provider_specific_message_keys(kwargs["messages"])}
         pricing = pricing_for_model(self._gk_cost_config, str(self.model))
         attempt = 0
         last_exc: BaseException | None = None
@@ -117,14 +146,23 @@ class InstrumentedLLM(LLM):
                 n_slots = self._gk_slot_count()
                 if (
                     n_slots > 1
-                    and is_rate_limit_llm_error(exc)
+                    and is_llm_route_failover_error(exc)
                     and self._gk_key_index < n_slots - 1
                 ):
+                    prev_idx = self._gk_key_index
+                    prev_model = str(getattr(self, "model", ""))
                     self._gk_set_active_slot(self._gk_key_index + 1)
                     logger.warning(
-                        "Gatekeeper: rate-limited on LLM slot %s/%s; retrying with next key+model",
+                        "Gatekeeper: LLM route failover %s/%s -> %s/%s (from model=%r to model=%r) "
+                        "after %s: %s",
+                        prev_idx + 1,
+                        n_slots,
                         self._gk_key_index + 1,
                         n_slots,
+                        prev_model,
+                        str(getattr(self, "model", "")),
+                        type(exc).__name__,
+                        exc,
                     )
                     attempt -= 1
                     continue
@@ -143,19 +181,31 @@ class InstrumentedLLM(LLM):
                         message=str(exc),
                     )
                     raise
-                delay = min(
-                    self._gk_max_delay_s,
-                    self._gk_base_delay_s * (2 ** (attempt - 1)) + random.random() * 0.15,
-                )
+                base = self._gk_base_delay_s * (2 ** (attempt - 1)) + random.random() * 0.15
+                suggested = provider_suggested_retry_delay_seconds(exc)
+                if suggested is not None:
+                    # Honor Groq/OpenRouter-style "try again in Ns" even when N > ``gk_max_delay_s``.
+                    cap = min(600.0, max(self._gk_max_delay_s, suggested))
+                    delay = min(cap, max(base, suggested))
+                else:
+                    delay = min(self._gk_max_delay_s, base)
                 logger.warning(
-                    "Gatekeeper: transient LLM error %s (attempt %s/%s); sleeping %.2fs",
+                    "Gatekeeper: transient LLM error %s (attempt %s/%s); sleeping %.2fs"
+                    "%s",
                     type(exc).__name__,
                     attempt,
                     self._gk_retry_max,
                     delay,
+                    f" (provider hint {suggested:.2f}s)" if suggested is not None else "",
                 )
                 time.sleep(delay)
-                self._gk_set_active_slot(0)
+                if not self._gk_routes:
+                    self._gk_set_active_slot(0)
+                elif (
+                    self._gk_slot_count() > 1
+                    and should_reset_llm_route_chain_on_transient(exc)
+                ):
+                    self._gk_set_active_slot(0)
                 continue
 
             dt = time.perf_counter() - t0

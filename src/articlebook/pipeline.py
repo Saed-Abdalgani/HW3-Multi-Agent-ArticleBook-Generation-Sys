@@ -78,6 +78,29 @@ def run_llm(topic: str, language: str, milestone: Milestone = "m2") -> str:
             milestone,
         )
         result = crew.kickoff(inputs={"topic": inputs.topic, "language": inputs.language})
+        touched_chapters: list[str] = []
+        if milestone in {"m4", "m5", "m6"}:
+            from articlebook.content_budget import apply_chapter_markdown_pdf_budgets
+            from articlebook.m4_assembly import assemble_latex_project
+
+            touched_chapters = apply_chapter_markdown_pdf_budgets(root)
+            if touched_chapters:
+                log.info("post_crew.chapter_budget paths=%s", touched_chapters)
+            # M5/M6: always re-assemble so `latex/main.tex` tracks generator changes (e.g. TOC
+            # depth) even when Markdown was already within the per-chapter word cap.
+            if touched_chapters or milestone in {"m5", "m6"}:
+                assemble_latex_project(root, inputs)
+        if milestone in {"m5", "m6"}:
+            from articlebook.compile_multipass import compile_latex_canonical
+
+            log_prefix = "m6_crew" if milestone == "m6" else "m5_crew"
+            rep = compile_latex_canonical(root, log_prefix=log_prefix)
+            log.info(
+                "post_crew.recompile prefix=%s ok=%s pdf_exists=%s",
+                log_prefix,
+                rep.ok,
+                rep.pdf_exists,
+            )
         log.info("crew.kickoff.done")
         usage_fn = getattr(llm, "get_token_usage_summary", None)
         if callable(usage_fn):

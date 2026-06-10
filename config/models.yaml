@@ -10,6 +10,10 @@ seed: 42
 # Passed to CrewAI `LLM(timeout=...)` when supported (seconds).
 timeout_seconds: 120
 
+# Passed to CrewAI `LLM(max_tokens=...)` for LiteLLM (caps completion budget; helps tiny
+# OpenRouter prepaid balances that fail at ~16k default). Override with ARTICLEBOOK_LLM_MAX_TOKENS.
+max_tokens: 8192
+
 rag:
   enabled: false
   # Corpus root (relative to repo). Use YAML frontmatter `bib_key:` on .md for M6 .bib mapping.

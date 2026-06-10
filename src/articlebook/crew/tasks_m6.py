@@ -15,8 +15,9 @@ def build_m6_tasks(agents: dict[str, Agent], topic: str, language: str) -> list[
 
     compile_ = Task(
         description=shared
-        + "After LaTeX assembly, run **run_latex_canonical_compile** with log_prefix `m6_crew` "
-        "(second argument). Full engine→biber→engine×N sequence per plan.md §4.",
+        + "After LaTeX assembly, run **run_latex_canonical_compile** with **reason** (first "
+        "argument, e.g. `m6_run`) and **log_prefix** (second argument) exactly `m6_crew`. "
+        "Full engine→biber→engine×N sequence per plan.md §4.",
         expected_output=(
             "Journal at build/m6_crew_compile_journal.json; "
             "build/main.pdf if engine ok."
@@ -26,8 +27,13 @@ def build_m6_tasks(agents: dict[str, Agent], topic: str, language: str) -> list[
     )
     qa = Task(
         description=shared
-        + "Call **run_m6_contract_checks** with log_prefix `m6_crew` (second argument). "
+        + "Call **run_m6_contract_checks** with **reason** (first argument, e.g. `m6_qa`) and "
+        "**log_prefix** (second argument) exactly `m6_crew`. "
         "Summarize pass/fail; note `build/m6_qa_report.md`. "
+        "Do **not** use write_workspace_file on compiler-owned outputs under `build/`, for "
+        "example `build/main.pdf`, `build/main.aux`, `build/main.bcf`, or `build/main.bbl`; "
+        "fix sources under `latex/` and `latex/references.bib`, then call "
+        "**run_latex_canonical_compile** again if cites fail. "
         "Visual BiDi check (FR-13) remains manual.",
         expected_output="M6 contract QA executed via run_m6_contract_checks.",
         agent=agents["qa"],

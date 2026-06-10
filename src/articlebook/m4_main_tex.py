@@ -42,7 +42,7 @@ def write_main_tex(root: Path, inputs: RunInputs, chapter_stems: list[str]) -> N
     )
 
     lines: list[str] = [
-        r"\documentclass[12pt,a4paper,twoside]{book}",
+        r"\documentclass[12pt,a4paper,twoside,openany]{book}",
         r"% --- M4: preamble ---",
         r"\usepackage{fontspec}",
         r"\usepackage{polyglossia}",
@@ -87,6 +87,8 @@ def write_main_tex(root: Path, inputs: RunInputs, chapter_stems: list[str]) -> N
         r"\vspace{0.5cm}",
         r"{\large \today\par}",
         r"\end{titlepage}",
+        r"% M6: keep TOC compact — Markdown ## becomes \section; listing them can add many pages.",
+        r"\setcounter{tocdepth}{0}",
         r"\tableofcontents",
         r"\listoffigures",
         r"\listoftables",

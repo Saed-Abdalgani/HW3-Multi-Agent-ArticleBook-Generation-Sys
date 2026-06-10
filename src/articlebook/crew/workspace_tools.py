@@ -9,6 +9,7 @@ from articlebook.crew.workspace_compile import compile_lualatex_once, run_matplo
 from articlebook.crew.workspace_io_security import (
     guarded_read_workspace_file,
     guarded_write_workspace_file,
+    guarded_write_workspace_files_batch,
 )
 from articlebook.crew.workspace_m6_reply import m6_contract_tool_reply
 from articlebook.crew.workspace_sandbox import (
@@ -26,6 +27,7 @@ __all__ = [
     "compile_lualatex_once",
     "run_matplotlib_stub_script",
     "write_workspace_file",
+    "write_workspace_files_batch",
     "read_workspace_file",
     "run_matplotlib_stub",
     "run_m3_asset_generators",
@@ -40,8 +42,26 @@ __all__ = [
 
 @tool("write_workspace_file")
 def write_workspace_file(relative_path: str, content: str) -> str:
-    """Write UTF-8 text under content/, latex/, figures/, build/, or scripts/ (relative to repo)."""
+    """Write UTF-8 text under content/, latex/, figures/, build/ (reports only), or scripts/."""
     return guarded_write_workspace_file(relative_path, content)
+
+
+@tool("write_workspace_files_batch")
+def write_workspace_files_batch(files_json: str) -> str:
+    """Write several files in one call.
+
+    Pass **one** argument, ``files_json``, whose value is a **string** (JSON text) that parses
+    to an **array** of objects, each with ``relative_path`` and ``content`` strings, e.g.::
+
+      [{"relative_path": "content/a.md", "content": "# A"}, {"relative_path": "latex/x.bib", "content": "@book{..."}}]
+
+    That array must be **inside** the ``files_json`` string (some models wrongly emit a bare
+    array as the whole tool payload; Groq then returns ``tool_use_failed``).
+
+    Use this when updating research notes + ``references.bib`` or all chapter Markdown files together.
+    ``write_workspace_file`` accepts only a single path + body (not an array).
+    """
+    return guarded_write_workspace_files_batch(files_json)
 
 
 @tool("read_workspace_file")
@@ -85,7 +105,7 @@ def assemble_latex_document(topic: str, language: str) -> str:
     root = _root()
     inputs = validate_topic_language(topic, language)
     stems = assemble_latex_project(root, inputs)
-    return f"Assembled LaTeX ({len(stems)} chapters + M3 showcase): " + ", ".join(stems)
+    return f"Assembled LaTeX ({len(stems)} Markdown chapters + M3 showcase): " + ", ".join(stems)
 
 
 @tool("run_lualatex_once")
@@ -119,6 +139,7 @@ def workspace_tools() -> list:
     """Tools shared across agents (bound root via bind_workspace_root)."""
     return [
         write_workspace_file,
+        write_workspace_files_batch,
         read_workspace_file,
         run_matplotlib_stub,
         run_m3_asset_generators,

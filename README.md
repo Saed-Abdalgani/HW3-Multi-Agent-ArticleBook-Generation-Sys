@@ -33,11 +33,13 @@ Create a **`.env`** file in the repo root (gitignored — never commit it). Copy
 | `ARTICLEBOOK_OPENROUTER_KEY_SUFFIX` | With Groq + NVIDIA suffixes, builds routes automatically: paste only the part after `sk-or-v1-` (or the full key). |
 | `ARTICLEBOOK_GROQ_KEY_SUFFIX` | Same for Groq: paste after `gsk_` or full `gsk_…` key. |
 | `ARTICLEBOOK_NVIDIA_KEY_SUFFIX` | Same for NVIDIA: paste after `nvapi-` or full `nvapi-…` key. |
-| `ARTICLEBOOK_ROUTE_MODELS` | Optional override: exactly **three** LiteLLM model ids separated by `;` (NVIDIA slot, OpenRouter slot, Groq slot). Defaults are set in code if unset. |
+| `ARTICLEBOOK_ROUTE_MODELS` | Optional: exactly **three** LiteLLM model ids separated by `;`. The suffix shortcut picks the **API key per model prefix** (`groq/` → Groq key, `openrouter/` → OpenRouter key, `nvidia_nim/` → NVIDIA key). Defaults: **Groq 70B → OpenRouter mini → Groq Llama 4 Scout** (higher TPM than 8B Instant for large tool+context payloads; avoids NVIDIA NIM’s parallel-tool-call limit). On **429 / throttling**, **402 / credits**, **Groq `tool_use_failed`**, etc., the gatekeeper advances to the next slot (`LLM route failover`). |
+| `ARTICLEBOOK_LLM_MAX_TOKENS` | Optional: cap **completion** `max_tokens` passed to CrewAI/LiteLLM (helps tiny OpenRouter balances that error at ~16k reserved tokens). Default **8192** from `config/models.yaml` when unset. |
 | `ARTICLEBOOK_LLM_ROUTES` | Advanced: explicit `key\|model;…` list (overrides suffix mode if non-empty). See **`.env_example`** for the simple triple-key layout. |
 | `ARTICLEBOOK_GK_RETRY_MAX`, `ARTICLEBOOK_GK_MIN_INTERVAL_S` | Gatekeeper knobs. |
 | `ARTICLEBOOK_RAG_ENABLED` | `true` / `1` to force RAG on (YAML is primary). |
 | `ARTICLEBOOK_LATEX_ENGINE` | `lualatex` (default) or `xelatex`. |
+| `ARTICLEBOOK_MAX_WORDS_PER_CHAPTER` | Optional integer (default **1000**). After **m4 / m5 / m6** LLM runs, chapter Markdown is deduped/trimmed and LaTeX is reassembled; **m5 / m6** also trigger a canonical recompile so the PDF page band matches M6 when agents skip disk writes. |
 
 ### CI / tests without paid API calls
 
@@ -45,9 +47,19 @@ Deterministic workspace fixtures are produced by **`articlebook.pipeline_stubs`*
 
 ### Multi-provider keys (OpenRouter + Groq + NVIDIA)
 
-Copy **`.env_example`** to **`.env`** and fill in **`ARTICLEBOOK_OPENROUTER_KEY_SUFFIX`**, **`ARTICLEBOOK_GROQ_KEY_SUFFIX`**, and **`ARTICLEBOOK_NVIDIA_KEY_SUFFIX`** (secret after each vendor prefix, or paste the full key). The app prepends `sk-or-v1-`, `gsk_`, and `nvapi-` when needed and uses three default LiteLLM models (override with **`ARTICLEBOOK_ROUTE_MODELS`**).
+Copy **`.env_example`** to **`.env`** and fill in **`ARTICLEBOOK_GROQ_KEY_SUFFIX`**, **`ARTICLEBOOK_OPENROUTER_KEY_SUFFIX`**, and **`ARTICLEBOOK_NVIDIA_KEY_SUFFIX`** (defaults: Groq first, OpenRouter second, **Groq Llama 4 Scout** third — NVIDIA key is still required for the shortcut but the default third model is Groq). Paste only the secret after each prefix, or the full key.
 
-Power users can still set **`ARTICLEBOOK_LLM_ROUTES`** to a full `key|model;…` string; if that variable is non-empty, it wins over the suffix shortcut.
+Power users can still set **`ARTICLEBOOK_LLM_ROUTES`** to a full `key|model;…` string (your own order); if that variable is non-empty, it wins over the suffix shortcut.
+
+### If paid / LLM runs keep failing
+
+1. Read **`build/run_report_*.md`** (path printed at the end of the CLI run) for the last error line.
+2. **OpenRouter “more credits / 402”** — add credits or put a cheaper model in **slot 2** (OpenRouter) via `ARTICLEBOOK_ROUTE_MODELS`; the gatekeeper fails over automatically when multiple routes are set.
+3. **Groq daily cap (TPD) / TPM** — bursts can hit per-minute TPM (e.g. Scout 30k); Groq often returns **“Please try again in Ns”** — the gatekeeper uses that as a **minimum sleep** before retry. Wait for reset or rely on OpenRouter / **slot-3 Scout**; add **`ARTICLEBOOK_LLM_MAX_TOKENS=4096`** if OpenRouter returns 402 “fewer max_tokens” on a small balance. If Groq returns **“Request too large … TPM”** on a tiny model, use **`ARTICLEBOOK_ROUTE_MODELS`** to pick a higher-TPM Groq id for slot 3 (defaults already use Scout).
+4. **M6 without MiKTeX** — use `--m6-allow-missing-pdf` so the run can finish static QA (full PDF page band still needs a local LaTeX install).
+5. **Groq `tool_use_failed` / “Failed to call a function”** — Groq rejected the tool payload (often the model emitted a bare JSON array instead of the named argument **`files_json`** as a **string**—task prompts now spell this out); the gatekeeper **fails over** (default: OpenRouter, then **Groq Llama 4 Scout**). If all routes fail, adjust `ARTICLEBOOK_ROUTE_MODELS` or CrewAI/LiteLLM versions.
+6. **NVIDIA NIM “single tool-calls”** — default **slot 3 is no longer NVIDIA**; put `nvidia_nim/...` in `ARTICLEBOOK_ROUTE_MODELS` only if you need it and accept parallel-tool limitations (or use explicit `ARTICLEBOOK_LLM_ROUTES`).
+7. **Groq `cache_breakpoint` errors** — the gatekeeper strips unsupported message keys before each LiteLLM call; upgrade CrewAI if new unsupported fields appear.
 
 ### M7 — YAML config + Gatekeeper (Phase 7)
 
@@ -80,11 +92,11 @@ Milestones:
 - **`m5`** — M3 + LaTeX assembly + **`run_latex_canonical_compile`** (multipass + biber) + QA on compile journal
 - **`m6`** — same as M5 crew tasks with `m6_crew` journal prefix + **`run_m6_contract_checks`**; CLI re-runs deterministic QA after kickoff and exits **1** on failure
 
-On machines **without** MiKTeX, pass **`--m6-allow-missing-pdf`** so PDF/page checks and missing-engine compile status are relaxed (static checks still run; not a substitute for a real PDF sign-off).
+On machines **without** MiKTeX, pass **`--m6-allow-missing-pdf`** so PDF/page checks and missing-engine compile status are relaxed (static checks still run; not a substitute for a real PDF sign-off). For debugging only, **`--m6-relax-page-count`** skips the 15–20 PDF page-count gate while keeping other M6 checks.
 
 **M8 (security):** paid runs prompt for confirmation unless you pass **`--yes`** (CI/automation). Use **`--dry-run`** to validate inputs and skip crew `write_workspace_file` bytes. If `content/` or `latex/` outputs already exist, you will be warned before overwrite unless `--yes` or `--dry-run`.
 
-**M9 (observability):** each CLI run writes **`build/run_report_<run_id>.json`** and a matching **`.md`** (redacted task snippets, instrumented LLM rows, artifact flags). The CLI prints the paths when the run finishes.
+**M9 (observability):** each CLI run writes **`build/run_report_<run_id>.json`** and a matching **`.md`** (redacted task snippets, instrumented LLM rows, artifact flags). The CLI prints the paths when the run finishes. On **failure**, it also prints a **`RUN FAILED — diagnosis`** block (exception text, last failed instrumented LLM row, report paths) so you can copy one screenful for debugging.
 
 **M9-OPT (local RAG, ADR-003):** set `rag.enabled: true` in `config/models.yaml` (or `ARTICLEBOOK_RAG_ENABLED=true`), install **`uv sync --extra rag`**, add corpus files under **`knowledge/`**, then the Research agent gets the **`retrieve_knowledge_snippets`** tool. Snippet `source_id` values map to `.bib` keys via Markdown front matter (`bib_key:`).
 
@@ -93,6 +105,10 @@ Legacy entrypoint:
 ```bash
 uv run python main.py --topic "Your Topic" --language English
 ```
+
+### M4 LaTeX assembly (topic book vs stub)
+
+When all six files **`content/chapter_1.md`** … **`chapter_6.md`** exist, **`main.tex`** includes **only** those chapters, then **`chapter_04_bidi_technical_note.md`** if it exists (BiDi demo), then the **M3 FR‑9** showcase chapter. Older template files such as **`chapter_01_scope.md`** are omitted so the PDF is not padded with empty shells. On re-assembly, stale **`latex/chapters/chapter_*.tex`** files that no longer match this set are removed. The book class uses **`openany`** (with `twoside`) so chapters may start on the next page instead of always on a recto, which cuts down blank pages.
 
 ## M5 compile artifacts
 
@@ -135,6 +151,7 @@ Optional local RAG (M9-OPT): `uv sync --extra rag` then enable `rag.enabled` in 
 - **`lualatex not found`:** install MiKTeX and ensure `lualatex` / `biber` are on `PATH` (on Windows the driver also prepends the default MiKTeX user `bin` when engines are missing from `PATH`).
 - **Want XeLaTeX instead:** set `ARTICLEBOOK_LATEX_ENGINE=xelatex` in the environment.
 - **Import errors running `python main.py` outside `uv`:** run via `uv run` so the `articlebook` package from `src/` is on the environment path.
+- **Tiny / broken `build/main.pdf` after M6:** the QA agent may try to “fix” cites by writing `build/main.tex` or `build/main.bbl`. Those paths are **compiler outputs** (sources live under **`latex/`**). `write_workspace_file` now **refuses** `build/main.*` and other LaTeX artifacts; delete any stray `build/main.tex` / bad `.bbl`, then run **`run_latex_canonical_compile`** (or a full **`uv run articlebook --milestone m6 ...`**) so the PDF is rebuilt from `latex/main.tex`.
 
 ## Credits / license
 

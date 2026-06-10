@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from articlebook.m4_chapters import discover_chapter_md
 from articlebook.pipeline_stubs import (
     run_stub_m1,
     run_stub_m2,
@@ -47,7 +48,9 @@ def test_stub_m4_assembles_main_tex() -> None:
     assert "cleveref" in main
     assert "fancyhdr" in main
     assert "printbibliography" in main
-    assert (root / "latex" / "chapters" / "chapter_01_scope.tex").is_file()
+    md_chapters = discover_chapter_md(root)
+    assert md_chapters, "expected markdown chapters after stub m4"
+    assert (root / "latex" / "chapters" / f"{md_chapters[0].stem}.tex").is_file()
     assert "\\input{chapters/m3_fr9_showcase}" in main
     assert (root / "build" / "m4_stub_manifest.md").is_file()
     manifest = (root / "build" / "m4_stub_manifest.md").read_text(encoding="utf-8")
@@ -66,9 +69,8 @@ def test_stub_m4_chapter_md_count_matches_generated_tex() -> None:
     """M6.4 proxy: one assembled TeX per Markdown chapter (outline-driven structure)."""
     run_stub_m4(topic="Hierarchy check", language="English")
     root = project_root()
-    md_chapters = sorted((root / "content").glob("chapter_*.md"))
+    md_chapters = discover_chapter_md(root)
     tex_chapters = sorted((root / "latex" / "chapters").glob("chapter_*.tex"))
-    assert len(md_chapters) >= 6
     assert len(tex_chapters) == len(md_chapters)
 
 

@@ -19,7 +19,11 @@ from articlebook.shared.config_credentials import (
 from articlebook.shared.config_yaml import load_models_document, rag_feature_enabled
 from articlebook.shared.paths import project_root
 
-load_dotenv()
+# Load repo-root `.env` first so API keys resolve even when the shell cwd is not
+# the project directory (plain `load_dotenv()` only searches the cwd by default).
+_env_path = project_root() / ".env"
+load_dotenv(_env_path)
+load_dotenv()  # optional cwd `.env` for local overrides (does not override existing keys)
 
 log = logging.getLogger(__name__)
 
@@ -60,6 +64,12 @@ def load_config() -> dict[str, Any]:
             str(doc.get("timeout_seconds", 120.0)),
         )
     )
+    max_tokens_raw = os.getenv("ARTICLEBOOK_LLM_MAX_TOKENS", "").strip()
+    if max_tokens_raw:
+        max_tokens = int(max_tokens_raw)
+    else:
+        mt_doc = doc.get("max_tokens", doc.get("max_completion_tokens"))
+        max_tokens = int(mt_doc) if mt_doc is not None else 8192
     rag_flag = rag_feature_enabled()
 
     gate = dict(doc.get("gatekeeper") or {})
@@ -79,6 +89,7 @@ def load_config() -> dict[str, Any]:
         "seed": seed,
         "provider": provider,
         "timeout": timeout,
+        "max_tokens": max(256, min(max_tokens, 128_000)),
         "rag_enabled": rag_flag,
         "config_version": str(doc.get("version", "0")),
         "gatekeeper": gate,

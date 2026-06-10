@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from articlebook.shared.gatekeeper import estimate_cost_usd, is_transient_llm_error
-from articlebook.shared.gatekeeper_policy import is_rate_limit_llm_error
+from articlebook.shared.gatekeeper_policy import is_llm_route_failover_error, is_rate_limit_llm_error
 from articlebook.shared.output_validate import (
     validate_agent_text_output,
     validate_agent_text_output_lenient,
@@ -18,8 +18,44 @@ def test_is_rate_limit_llm_error_heuristic() -> None:
 
     assert is_rate_limit_llm_error(RateLimitError("slow down"))
     assert is_rate_limit_llm_error(RuntimeError("429 too many requests"))
+    assert is_rate_limit_llm_error(RuntimeError('OpenrouterException - {"code":402}'))
+    assert is_rate_limit_llm_error(RuntimeError("This request requires more credits"))
     assert not is_rate_limit_llm_error(ValueError("bad prompt"))
     assert is_rate_limit_llm_error(RuntimeError("Resource exhausted"))
+
+
+def test_is_llm_route_failover_includes_groq_tool_use_failed() -> None:
+    body = 'GroqException - {"code":"tool_use_failed","message":"Failed to call a function"}'
+    assert is_llm_route_failover_error(RuntimeError(body))
+
+
+def test_is_llm_route_failover_includes_nvidia_single_tool_calls() -> None:
+    body = "Nvidia_nimException - This model only supports single tool-calls at once!"
+    assert is_llm_route_failover_error(RuntimeError(body))
+
+
+def test_is_transient_llm_error_rejects_nvidia_single_tool_calls() -> None:
+    assert not is_transient_llm_error(
+        RuntimeError("This model only supports single tool-calls at once!")
+    )
+
+
+def test_is_transient_llm_error_rejects_tool_use_failed() -> None:
+    assert not is_transient_llm_error(
+        RuntimeError('tool_use_failed Failed to call a function. See failed_generation')
+    )
+
+
+def test_is_transient_llm_error_rejects_credit_exhaustion() -> None:
+    class APIError(Exception):
+        pass
+
+    assert not is_transient_llm_error(
+        APIError(
+            'OpenrouterException - {"error":{"message":"requires more credits or fewer max_tokens"}}'
+        )
+    )
+    assert is_transient_llm_error(APIError("OpenrouterException - 503 upstream busy"))
 
 
 def test_is_transient_llm_error_heuristic() -> None:

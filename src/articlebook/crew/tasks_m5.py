@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from crewai import Agent, Task
 
+from articlebook.crew.tasks_m2 import _WRITE_WS_SINGLE
 from articlebook.crew.tasks_m4 import build_m4_tasks
 
 
@@ -16,7 +17,8 @@ def build_m5_tasks(agents: dict[str, Agent], topic: str, language: str) -> list[
     compile_ = Task(
         description=shared
         + "After LaTeX assembly (same as M4), run **run_latex_canonical_compile** with "
-        "log_prefix `m5_crew` (second argument). This runs the full engine→biber→engine×N "
+        "**reason** (first argument, e.g. `m5_run`) and **log_prefix** (second argument) "
+        "exactly `m5_crew`. This runs the full engine→biber→engine×N "
         "sequence per plan.md §4. Summarize `ok`, `build/main.pdf`, and the journal JSON path.",
         expected_output=(
             "Canonical multipass compile executed; "
@@ -27,11 +29,11 @@ def build_m5_tasks(agents: dict[str, Agent], topic: str, language: str) -> list[
     )
     qa = Task(
         description=shared
-        + "Call **verify_m3_assets**. Read `build/m5_crew_compile_journal.json` and the last "
-        "engine pass log under `build/m5_crew_pass*_*.log` for errors. "
-        "Write `build/m5_qa_report.md` "
-        "with: compile ok flag, pdf presence, unresolved citation/reference lines if any, "
-        "and M3 asset status.",
+        + "Call **verify_m3_assets**. Read `build/m5_crew_compile_journal.json`; use the log "
+        "paths recorded there to read engine pass logs under `build/` for errors. "
+        + _WRITE_WS_SINGLE
+        + " Save **relative_path** `build/m5_qa_report.md` with **content** covering: compile ok "
+        "flag, pdf presence, unresolved citation or reference lines if any, and M3 asset status.",
         expected_output="m5_qa_report.md with M5 compile + contract coverage.",
         agent=agents["qa"],
         context=[compile_],

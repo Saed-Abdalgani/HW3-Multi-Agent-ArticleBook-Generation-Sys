@@ -34,6 +34,8 @@ def run_m3_python_generators(root: Path) -> str:
             capture_output=True,
             text=True,
             check=False,
+            encoding="utf-8",
+            errors="replace",
         )
         tail = (proc.stderr or proc.stdout or "")[-1500:]
         lines.append(f"{rel} exit={proc.returncode}\n{tail}")

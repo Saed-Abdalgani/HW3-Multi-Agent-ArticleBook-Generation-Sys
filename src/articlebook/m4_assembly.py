@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from articlebook.bib_contract_align import align_bib_with_tex_contract
 from articlebook.inputs import RunInputs
 from articlebook.m4_chapters import write_chapter_tex_files
 from articlebook.m4_main_tex import write_main_tex
@@ -26,4 +27,5 @@ def assemble_latex_project(root: Path, inputs: RunInputs) -> list[str]:
         msg = "No content/chapter_*.md files found; run M2 stub or writer first."
         raise FileNotFoundError(msg)
     write_main_tex(root, inputs, stems)
+    align_bib_with_tex_contract(root)
     return stems
