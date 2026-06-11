@@ -72,7 +72,6 @@ Desktop.ini
 build/
 *.aux
 *.log
-*.pdf
 *.bbl
 *.bcf
 *.run.xml
