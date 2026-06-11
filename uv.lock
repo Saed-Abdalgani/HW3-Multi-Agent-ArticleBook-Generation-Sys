@@ -187,7 +187,7 @@ requires-dist = [
     { name = "chromadb", marker = "extra == 'rag'", specifier = ">=0.5.0" },
     { name = "crewai", specifier = ">=0.86.0" },
     { name = "crewai-tools", specifier = ">=0.17.0" },
-    { name = "litellm", specifier = ">=1.55.0" },
+    { name = "litellm", specifier = ">=1.88.0" },
     { name = "matplotlib", specifier = ">=3.8.0" },
     { name = "pypdf", specifier = ">=5.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },

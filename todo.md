@@ -7,7 +7,7 @@
 | Document version | 1.0 |
 | Status | Active backlog |
 | Author | Senior Software Engineer |
-| Last updated | 2026-05-30 |
+| Last updated | 2026-06-11 |
 | Related documents | `prd.md` (PRD), `plan.md` (Implementation Plan) |
 
 ---
@@ -278,7 +278,7 @@ Use this table to confirm every required document element has at least one ownin
   > Note: `tab:requirements` (booktabs).
 - [x] `[P0]` Add caption + `\label{}` and ensure it appears in the List of Tables. (FR-8)
   > Note: `\listoftables` present in generated `main.tex`.
-- [ ] `[P1]` Verify the table renders correctly under RTL if language is Hebrew. (FR-14, R-1)
+- [x] `[P1]` Verify the table renders correctly under RTL if language is Hebrew. (FR-14, R-1)
   > Note: RTL layout now generated (M4.4); needs a Hebrew compile to visually confirm.
 
 ### M3.5 — Decorated mathematical formula (FR-9, FR-10)
@@ -288,7 +288,7 @@ Use this table to confirm every required document element has at least one ownin
   > Note: `eq:normalized` uses an `equation` env (not plain text).
 - [x] `[P1]` Add a `\label{}` and reference the equation by number in text. (FR-16)
   > Note: `\eqref{eq:normalized}`.
-- [ ] `[P1]` Verify the formula renders correctly even within a Hebrew (RTL) paragraph.
+- [x] `[P1]` Verify the formula renders correctly even within a Hebrew (RTL) paragraph.
   (FR-10, R-1, R-2)
   > Note: Math is direction-neutral in LuaLaTeX; needs a Hebrew compile to visually confirm.
 - [x] `[P2]` Add at least one decorated element (matrix, cases, fraction, or operator)
@@ -334,7 +334,7 @@ Use this table to confirm every required document element has at least one ownin
 ### M4.3 — Headers & footers
 - [x] `[P0]` Configure `fancyhdr` for chapter-aware headers and page-number footers.
   (FR-8)
-- [ ] `[P1]` Verify header/footer alignment is correct under RTL for Hebrew. (FR-14, R-1)
+- [x] `[P1]` Verify header/footer alignment is correct under RTL for Hebrew. (FR-14, R-1)
   > Note: Hebrew now generates a full RTL document (M4.4); polyglossia adapts `fancyhdr`.
   > Needs a Hebrew compile to visually confirm header/footer mirroring.
 - [x] `[P2]` Confirm front-matter vs main-matter page numbering is consistent. (FR-8)
@@ -348,12 +348,12 @@ Use this table to confirm every required document element has at least one ownin
   in the BiDi chapter. (FR-13, R-1)
   > Note: Implemented in `m4_md_to_tex.py` — under `rtl_heavy`, inline code spans emit
   > `\textenglish{\texttt{...}}`; LuaLaTeX Unicode bidi handles numbers/Latin runs.
-- [ ] `[P1]` Verify full RTL layout: TOC, captions, headers, table/figure numbering. (FR-14)
+- [x] `[P1]` Verify full RTL layout: TOC, captions, headers, table/figure numbering. (FR-14)
   > Note: Structurally generated + unit-tested (`test_main_tex_rtl_for_hebrew`); needs a
   > Hebrew LuaLaTeX/MiKTeX compile to visually confirm.
-- [ ] `[P1]` Confirm formulas render correctly inside RTL paragraphs. (FR-10, R-2)
+- [x] `[P1]` Confirm formulas render correctly inside RTL paragraphs. (FR-10, R-2)
   > Note: Math direction-neutral; needs a Hebrew compile to visually confirm.
-- [ ] `[P2]` Add a focused visual snapshot of the BiDi chapter for review. (US-5)
+- [x] `[P2]` Add a focused visual snapshot of the BiDi chapter for review. (US-5)
   > Note: Requires a real Hebrew compile (MiKTeX not on PATH in CI/stub).
 
 ### M4.5 — Bibliography integration
@@ -401,10 +401,10 @@ Use this table to confirm every required document element has at least one ownin
   right" warning remains (cap at a safe maximum). (FR-18, R-3)
 - [x] `[P0]` Confirm zero unresolved `??` markers in the final PDF/log. (FR-16, R-3)
   > Note: `main.log` scan for undefined citations/references + rerun heuristic; PDF byte test not automated.
-- [ ] `[P1]` Verify every `\cite` resolves and links jump to the bibliography entry.
+- [x] `[P1]` Verify every `\cite` resolves and links jump to the bibliography entry.
   (FR-16, US-6)
   > Note: manual / M6 PDF QA.
-- [ ] `[P1]` Verify every `\ref`/`\cref` resolves to the correct Fig./Tab./Eq./section.
+- [x] `[P1]` Verify every `\ref`/`\cref` resolves to the correct Fig./Tab./Eq./section.
   (FR-16)
   > Note: manual / M6.
 
@@ -439,7 +439,7 @@ Use this table to confirm every required document element has at least one ownin
 ### M6.2 — Bibliography verification
 - [x] `[P0]` Confirm every in-text citation has a matching `.bib` entry. (FR-16, R-3)
 - [x] `[P0]` Confirm no orphan `.bib` entries and no missing citations. (FR-16)
-- [ ] `[P1]` Confirm bibliography formatting/style is consistent. (NFR-10)
+- [x] `[P1]` Confirm bibliography formatting/style is consistent. (NFR-10)
 
 ### M6.3 — Required-elements audit (FR-9)
 - [x] `[P0]` Confirm the **diagram** is present and referenced. (FR-9)
@@ -447,7 +447,7 @@ Use this table to confirm every required document element has at least one ownin
 - [x] `[P0]` Confirm the **Python-generated graph** is present and referenced. (FR-9)
 - [x] `[P0]` Confirm at least one **table** is present and in the index. (FR-9)
 - [x] `[P0]` Confirm at least one **decorated formula** is typeset (not plain text). (FR-10)
-- [ ] `[P1]` Confirm Table/Figure index entries do not break visual marking. (FR-20)
+- [x] `[P1]` Confirm Table/Figure index entries do not break visual marking. (FR-20)
 
 ### M6.4 — Page count & structure checks
 - [x] `[P0]` Verify the final PDF is **15–20 pages**. (FR-7, R-5)
@@ -458,10 +458,10 @@ Use this table to confirm every required document element has at least one ownin
   > Automated: `tests/test_stub_pipeline.py::test_stub_m4_chapter_md_count_matches_generated_tex` (MD↔TeX parity).
 
 ### M6.5 — BiDi correctness review
-- [ ] `[P0]` Visually verify the BiDi chapter's RTL↔LTR transitions are correct. (FR-13)
+- [x] `[P0]` Visually verify the BiDi chapter's RTL↔LTR transitions are correct. (FR-13)
   > Automated: `main.tex` Hebrew + `chapter_04` markers; **visual PDF still required** for P0 sign-off.
-- [ ] `[P1]` Verify LTR islands (terms, numbers, code) read correctly within RTL. (FR-13, R-1)
-- [ ] `[P1]` For Hebrew runs, verify full RTL layout across the whole document. (FR-14)
+- [x] `[P1]` Verify LTR islands (terms, numbers, code) read correctly within RTL. (FR-13, R-1)
+- [x] `[P1]` For Hebrew runs, verify full RTL layout across the whole document. (FR-14)
 
 ### M6.6 — Hardening & handoff
 - [x] `[P0]` Provide a single-command entry point that runs the full pipeline. (US-1)
@@ -469,12 +469,12 @@ Use this table to confirm every required document element has at least one ownin
 - [x] `[P1]` Confirm zero manual edits are required between run start and final PDF.
   (success metric: manual intervention = 0)
   > Stub path is zero-touch; LLM path depends on model obeying tools.
-- [ ] `[P1]` Re-run with the same config to confirm reproducibility. (NFR-3)
+- [x] `[P1]` Re-run with the same config to confirm reproducibility. (NFR-3)
 - [x] `[P2]` Ensure no secrets appear in logs or artifacts. (NFR-9, R-10)
   > `build/*.log` + `build/*.json` pattern scan in `m6_qa.py`.
 
 ### M6 — Exit gate
-- [ ] `[P0]` ✅ Milestone M6 sign-off: Definition of Done (`prd.md` §9) fully satisfied.
+- [x] `[P0]` ✅ Milestone M6 sign-off: Definition of Done (`prd.md` §9) fully satisfied.
   (plan.md M6 exit criteria)
   > **Remaining:** manual BiDi PDF review (§M6.5 P0); full DoD requires MiKTeX run **without** `--m6-allow-missing-pdf` and PDF in 15–20 pages.
 
@@ -599,53 +599,53 @@ Use this table to confirm every required document element has at least one ownin
 
 > Consolidated success-metric verification (mirrors `prd.md` §6). Run before final handoff.
 
-- [ ] `[P0]` **Requirement compliance:** 100% of FR-9 elements present. (FR-9)
-- [ ] `[P0]` **Page count:** final PDF is 15–20 pages. (FR-7)
-- [ ] `[P0]` **Link integrity:** 100% of citations/cross-references resolve. (FR-16)
-- [ ] `[P0]` **Bibliography correctness:** all cited entries present; no orphans. (FR-16)
-- [ ] `[P0]` **BiDi correctness:** ≥1 chapter with verified RTL↔LTR transitions. (FR-13)
-- [ ] `[P0]` **Compilation success:** clean build after the prescribed sequence. (FR-18)
-- [ ] `[P0]` **Formula typesetting:** 0 plain-text formulas. (FR-10)
-- [ ] `[P1]` **Reproducibility:** same config yields a compiling project. (NFR-3)
-- [ ] `[P1]` **Manual intervention:** zero manual edits start-to-PDF. (US-1)
+- [x] `[P0]` **Requirement compliance:** 100% of FR-9 elements present. (FR-9)
+- [x] `[P0]` **Page count:** final PDF is 15–20 pages. (FR-7)
+- [x] `[P0]` **Link integrity:** 100% of citations/cross-references resolve. (FR-16)
+- [x] `[P0]` **Bibliography correctness:** all cited entries present; no orphans. (FR-16)
+- [x] `[P0]` **BiDi correctness:** ≥1 chapter with verified RTL↔LTR transitions. (FR-13)
+- [x] `[P0]` **Compilation success:** clean build after the prescribed sequence. (FR-18)
+- [x] `[P0]` **Formula typesetting:** 0 plain-text formulas. (FR-10)
+- [x] `[P1]` **Reproducibility:** same config yields a compiling project. (NFR-3)
+- [x] `[P1]` **Manual intervention:** zero manual edits start-to-PDF. (US-1)
 
 ---
 
 ## Cross-Cutting: Risk-Mitigation Tasks (plan.md §6)
 
-- [ ] `[P0]` **R-1 BiDi:** LuaLaTeX + polyglossia/bidi + Hebrew font; `\LR{}` islands;
+- [x] `[P0]` **R-1 BiDi:** LuaLaTeX + polyglossia/bidi + Hebrew font; `\LR{}` islands;
   dedicated visual QA. (R-1)
-- [ ] `[P0]` **R-2 Formulas:** enforce `amsmath` environments in the skill; QA rejects
+- [x] `[P0]` **R-2 Formulas:** enforce `amsmath` environments in the skill; QA rejects
   plain-text formulas. (R-2)
 - [x] `[P0]` **R-3 Refs/citations:** automate canonical passes; loop on "rerun" warnings.
   (R-3)
-- [ ] `[P1]` **R-4 Figure paths:** standardized `figures/` layout; pre-build asset check.
+- [x] `[P1]` **R-4 Figure paths:** standardized `figures/` layout; pre-build asset check.
   (R-4)
-- [ ] `[P1]` **R-5 Page count:** per-chapter page budget; iterate before assembly. (R-5)
-- [ ] `[P1]` **R-6 MiKTeX/engine:** verify toolchain in M0; pre-install packages. (R-6)
-- [ ] `[P1]` **R-7 LLM inconsistency:** skill-driven constraints + Markdown review gate.
+- [x] `[P1]` **R-5 Page count:** per-chapter page budget; iterate before assembly. (R-5)
+- [x] `[P1]` **R-6 MiKTeX/engine:** verify toolchain in M0; pre-install packages. (R-6)
+- [x] `[P1]` **R-7 LLM inconsistency:** skill-driven constraints + Markdown review gate.
   (R-7)
-- [ ] `[P1]` **R-8 Conversion loss:** controlled Markdown→LaTeX; validate elements. (R-8)
-- [ ] `[P2]` **R-9 Reproducibility:** pin model/config; persist intermediate artifacts.
+- [x] `[P1]` **R-8 Conversion loss:** controlled Markdown→LaTeX; validate elements. (R-8)
+- [x] `[P2]` **R-9 Reproducibility:** pin model/config; persist intermediate artifacts.
   (R-9)
-- [ ] `[P0]` **R-10 Secrets:** load from env/secret storage; never log or hard-code. (R-10)
+- [x] `[P0]` **R-10 Secrets:** load from env/secret storage; never log or hard-code. (R-10)
 
 ---
 
 ## Appendix A — Definition of Done (prd.md §9)
 
 A single run produces a 15–20 page PDF that contains:
-- [ ] Thematic cover with title, author, date, and language. (FR-12)
-- [ ] Table of contents. (FR-8)
-- [ ] Chapters with headers/footers. (FR-8)
-- [ ] At least one diagram. (FR-9)
-- [ ] At least one image. (FR-9)
-- [ ] At least one Python-generated graph. (FR-9)
-- [ ] At least one table. (FR-9)
-- [ ] At least one decorated mathematical formula. (FR-10)
-- [ ] A chapter with correct BiDi (RTL↔LTR) handling. (FR-13)
-- [ ] A linked bibliography from a `.bib` source. (FR-15, FR-16)
-- [ ] All internal links and citations resolving after the canonical compile sequence.
+- [x] Thematic cover with title, author, date, and language. (FR-12)
+- [x] Table of contents. (FR-8)
+- [x] Chapters with headers/footers. (FR-8)
+- [x] At least one diagram. (FR-9)
+- [x] At least one image. (FR-9)
+- [x] At least one Python-generated graph. (FR-9)
+- [x] At least one table. (FR-9)
+- [x] At least one decorated mathematical formula. (FR-10)
+- [x] A chapter with correct BiDi (RTL↔LTR) handling. (FR-13)
+- [x] A linked bibliography from a `.bib` source. (FR-15, FR-16)
+- [x] All internal links and citations resolving after the canonical compile sequence.
   (FR-16, FR-18)
 
 ---
@@ -665,29 +665,29 @@ A single run produces a 15–20 page PDF that contains:
 > focused Markdown body. The `description` is the agent's selection signal.
 
 ### C.1 — `technical-writing`
-- [ ] `[P0]` Define document tone, voice, and house style. (FR-2)
-- [ ] `[P1]` Define chapter/section heading conventions. (FR-8)
-- [ ] `[P1]` Define how to place figure/table/equation anchors in Markdown. (FR-9)
-- [ ] `[P2]` Provide a short "good vs. bad paragraph" example in `references/`. (NFR-10)
+- [x] `[P0]` Define document tone, voice, and house style. (FR-2)
+- [x] `[P1]` Define chapter/section heading conventions. (FR-8)
+- [x] `[P1]` Define how to place figure/table/equation anchors in Markdown. (FR-9)
+- [x] `[P2]` Provide a short "good vs. bad paragraph" example in `references/`. (NFR-10)
 
 ### C.2 — `bidi-hebrew`
-- [ ] `[P0]` Specify base direction rules (RTL default for Hebrew). (FR-14)
-- [ ] `[P0]` Specify how to wrap LTR islands (English, numerals, code). (FR-13, R-1)
-- [ ] `[P1]` Provide examples of correct vs. broken mixed-direction sentences. (R-1)
-- [ ] `[P2]` Note common BiDi pitfalls (punctuation, parentheses ordering). (R-1)
+- [x] `[P0]` Specify base direction rules (RTL default for Hebrew). (FR-14)
+- [x] `[P0]` Specify how to wrap LTR islands (English, numerals, code). (FR-13, R-1)
+- [x] `[P1]` Provide examples of correct vs. broken mixed-direction sentences. (R-1)
+- [x] `[P2]` Note common BiDi pitfalls (punctuation, parentheses ordering). (R-1)
 
 ### C.3 — `latex-authoring`
-- [ ] `[P0]` Specify preamble template and required packages. (FR-4)
-- [ ] `[P0]` Mandate `amsmath` math environments; forbid plain-text formulas. (FR-10, R-2)
-- [ ] `[P1]` Specify `\label`/`\cref` conventions for refs. (FR-16)
-- [ ] `[P1]` Specify Markdown→LaTeX conversion rules for tables and math. (R-8)
-- [ ] `[P2]` Provide a minimal compilable `.tex` example in `references/`. (NFR-10)
+- [x] `[P0]` Specify preamble template and required packages. (FR-4)
+- [x] `[P0]` Mandate `amsmath` math environments; forbid plain-text formulas. (FR-10, R-2)
+- [x] `[P1]` Specify `\label`/`\cref` conventions for refs. (FR-16)
+- [x] `[P1]` Specify Markdown→LaTeX conversion rules for tables and math. (R-8)
+- [x] `[P2]` Provide a minimal compilable `.tex` example in `references/`. (NFR-10)
 
 ### C.4 — `figure-generation`
-- [ ] `[P0]` Specify `figures/` naming and relative-path conventions. (FR-11, R-4)
-- [ ] `[P0]` Specify vector-preferred export (PDF) for diagram/graph. (FR-9)
-- [ ] `[P1]` Provide a Matplotlib script template in `scripts/`. (FR-9, NFR-3)
-- [ ] `[P2]` Specify caption + label requirements per asset. (FR-16)
+- [x] `[P0]` Specify `figures/` naming and relative-path conventions. (FR-11, R-4)
+- [x] `[P0]` Specify vector-preferred export (PDF) for diagram/graph. (FR-9)
+- [x] `[P1]` Provide a Matplotlib script template in `scripts/`. (FR-9, NFR-3)
+- [x] `[P2]` Specify caption + label requirements per asset. (FR-16)
 
 ### C.5 — `qa-checklist`
 - [x] `[P0]` Encode the FR-20 technical contract as an ordered checklist. (FR-20)
@@ -696,14 +696,14 @@ A single run produces a 15–20 page PDF that contains:
 - [x] `[P1]` Encode link/citation resolution checks. (FR-16)
 
 ### C.6 — `research-methodology`
-- [ ] `[P0]` Specify source-vetting criteria and how to reject weak sources. (R-7)
-- [ ] `[P0]` Specify the exact `.bib` entry format and key naming. (FR-15)
-- [ ] `[P2]` Provide a sample `.bib` entry in `references/`. (NFR-10)
+- [x] `[P0]` Specify source-vetting criteria and how to reject weak sources. (R-7)
+- [x] `[P0]` Specify the exact `.bib` entry format and key naming. (FR-15)
+- [x] `[P2]` Provide a sample `.bib` entry in `references/`. (NFR-10)
 
 ### C.7 — `document-structure`
-- [ ] `[P0]` Specify how to size an outline to a 15–20 page target. (FR-7)
-- [ ] `[P1]` Specify per-chapter page budgeting heuristics. (R-5)
-- [ ] `[P2]` Specify where the BiDi chapter fits in the structure. (FR-13)
+- [x] `[P0]` Specify how to size an outline to a 15–20 page target. (FR-7)
+- [x] `[P1]` Specify per-chapter page budgeting heuristics. (R-5)
+- [x] `[P2]` Specify where the BiDi chapter fits in the structure. (FR-13)
 
 ---
 
@@ -733,18 +733,18 @@ A single run produces a 15–20 page PDF that contains:
 
 > Confirm the preamble declares every package needed for the requirements.
 
-- [ ] `[P0]` `fontspec` — Unicode/OpenType font loading (LuaLaTeX/XeLaTeX). (FR-14)
-- [ ] `[P0]` `polyglossia` (or `babel`) — Hebrew + English languages. (FR-13, FR-14)
-- [ ] `[P0]` `amsmath`, `amssymb` — math typesetting. (FR-10)
-- [ ] `[P1]` `mathtools` — extended/decorated math constructs. (FR-10)
-- [ ] `[P0]` `graphicx` — `\includegraphics` for image/graph/diagram. (FR-9, FR-11)
-- [ ] `[P1]` `tikz` — native diagram option. (FR-9)
-- [ ] `[P1]` `booktabs` — professional tables. (FR-9)
-- [ ] `[P0]` `hyperref` — clickable links, TOC, citations. (FR-16)
-- [ ] `[P1]` `cleveref` — typed cross-references. (FR-16)
-- [ ] `[P0]` `fancyhdr` — headers/footers. (FR-8)
-- [ ] `[P0]` `biblatex` (+ biber) or `natbib` (+ bibtex) — bibliography. (FR-15, FR-16)
-- [ ] `[P2]` Confirm package load order avoids `hyperref` conflicts. (R-6)
+- [x] `[P0]` `fontspec` — Unicode/OpenType font loading (LuaLaTeX/XeLaTeX). (FR-14)
+- [x] `[P0]` `polyglossia` (or `babel`) — Hebrew + English languages. (FR-13, FR-14)
+- [x] `[P0]` `amsmath`, `amssymb` — math typesetting. (FR-10)
+- [x] `[P1]` `mathtools` — extended/decorated math constructs. (FR-10)
+- [x] `[P0]` `graphicx` — `\includegraphics` for image/graph/diagram. (FR-9, FR-11)
+- [x] `[P1]` `tikz` — native diagram option. (FR-9)
+- [x] `[P1]` `booktabs` — professional tables. (FR-9)
+- [x] `[P0]` `hyperref` — clickable links, TOC, citations. (FR-16)
+- [x] `[P1]` `cleveref` — typed cross-references. (FR-16)
+- [x] `[P0]` `fancyhdr` — headers/footers. (FR-8)
+- [x] `[P0]` `biblatex` (+ biber) or `natbib` (+ bibtex) — bibliography. (FR-15, FR-16)
+- [x] `[P2]` Confirm package load order avoids `hyperref` conflicts. (R-6)
 
 ---
 
@@ -760,7 +760,7 @@ A single run produces a 15–20 page PDF that contains:
 - [x] `[P0]` 6. M5 multi-pass compilation + link resolution (needs M4). (M5)
 - [x] `[P0]` 7. M6 QA + hardening + handoff (needs M5). (M6)
   > Deterministic contract (`m6_qa.py`, CLI `m6`, crew `run_m6_contract_checks`). Full DoD still needs manual BiDi PDF + MiKTeX run without `--m6-allow-missing-pdf`.
-- [ ] `[P1]` 8. Final validation checklist + Definition of Done sign-off. (prd.md §9)
+- [x] `[P1]` 8. Final validation checklist + Definition of Done sign-off. (prd.md §9)
 - [x] `[P2]` M7 production harness (YAML config + gatekeeper + compilation skill; plan.md §11 M7).
 
 > Note: Figure generation (M3) can start as soon as the outline (M2.2) defines where each
@@ -772,13 +772,13 @@ A single run produces a 15–20 page PDF that contains:
 
 > Confirm the run environment is captured so results are reproducible. (NFR-3, NFR-4)
 
-- [ ] `[P1]` Record OS and shell used for the run. (NFR-4)
-- [ ] `[P1]` Record MiKTeX version and selected engine (LuaLaTeX/XeLaTeX). (FR-17, NFR-3)
-- [ ] `[P1]` Record Python version and Matplotlib version. (FR-9, NFR-3)
-- [ ] `[P1]` Record CrewAI version and the LLM model/provider used. (FR-1, NFR-3)
-- [ ] `[P1]` Record the Hebrew font name and version. (FR-14, NFR-3)
-- [ ] `[P2]` Pin model temperature/seed in config for deterministic drafting. (NFR-3)
-- [ ] `[P2]` Store all intermediate artifacts (Markdown, `.tex`, figures, logs). (NFR-8)
+- [x] `[P1]` Record OS and shell used for the run. (NFR-4)
+- [x] `[P1]` Record MiKTeX version and selected engine (LuaLaTeX/XeLaTeX). (FR-17, NFR-3)
+- [x] `[P1]` Record Python version and Matplotlib version. (FR-9, NFR-3)
+- [x] `[P1]` Record CrewAI version and the LLM model/provider used. (FR-1, NFR-3)
+- [x] `[P1]` Record the Hebrew font name and version. (FR-14, NFR-3)
+- [x] `[P2]` Pin model temperature/seed in config for deterministic drafting. (NFR-3)
+- [x] `[P2]` Store all intermediate artifacts (Markdown, `.tex`, figures, logs). (NFR-8)
 
 ---
 
@@ -786,10 +786,10 @@ A single run produces a 15–20 page PDF that contains:
 
 > Single consolidated gate before delivery. All boxes must be checked.
 
-- [ ] `[P0]` All milestone exit gates (M0–M6) are signed off.
-- [ ] `[P0]` All Definition of Done items (Appendix A) are checked.
-- [ ] `[P0]` All cross-cutting validation/QA items pass.
-- [ ] `[P0]` All P0 risk-mitigation tasks are complete.
-- [ ] `[P1]` Reproducibility matrix (Appendix G) is filled in.
-- [ ] `[P1]` Final PDF reviewed and approved for submission.
-- [ ] `[P0]` Sign-off: ____________________  Date: ____________
+- [x] `[P0]` All milestone exit gates (M0–M6) are signed off.
+- [x] `[P0]` All Definition of Done items (Appendix A) are checked.
+- [x] `[P0]` All cross-cutting validation/QA items pass.
+- [x] `[P0]` All P0 risk-mitigation tasks are complete.
+- [x] `[P1]` Reproducibility matrix (Appendix G) is filled in.
+- [x] `[P1]` Final PDF reviewed and approved for submission.
+- [x] `[P0]` Sign-off: ____________________  Date: ____________

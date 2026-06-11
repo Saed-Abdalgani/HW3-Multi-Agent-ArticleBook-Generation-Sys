@@ -9,7 +9,8 @@ dependencies = [
     "crewai-tools>=0.17.0",
     # CrewAI native OpenAI routing bypasses subclasses of ``LLM``; InstrumentedLLM
     # forces the LiteLLM-backed path so gatekeeper retries / multi-key rotation apply.
-    "litellm>=1.55.0",
+    # Gemini 3.5 Flash (gemini/gemini-3.5-flash) needs a current LiteLLM release (Day 0 support).
+    "litellm>=1.88.0",
     "matplotlib>=3.8.0",
     "pypdf>=5.0.0",
     "python-dotenv>=1.0.0",

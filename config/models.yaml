@@ -2,17 +2,19 @@
 # See `src/articlebook/shared/config.py` for merge rules.
 version: "1"
 
+# Default: OpenAI GPT-5.5 (Chat Completions; LiteLLM instrumented path).
+# API: https://developers.openai.com/api/docs/models/gpt-5.5
+# Override with env: ARTICLEBOOK_LLM_PROVIDER, MODEL_NAME, OPENAI_API_KEY.
 provider: openai
-model: gpt-4-turbo
+model: gpt-5.5
 temperature: 0.7
 seed: 42
 
 # Passed to CrewAI `LLM(timeout=...)` when supported (seconds).
-timeout_seconds: 120
-
-# Passed to CrewAI `LLM(max_tokens=...)` for LiteLLM (caps completion budget; helps tiny
-# OpenRouter prepaid balances that fail at ~16k default). Override with ARTICLEBOOK_LLM_MAX_TOKENS.
-max_tokens: 8192
+timeout_seconds: 300
+# Completion cap (LiteLLM ``max_tokens``): **27768** (see README — three-line “Token budget”).
+# Same value as default ``ARTICLEBOOK_LLM_MAX_TOKENS`` in ``.env_example`` unless overridden.
+max_tokens: 27768
 
 rag:
   enabled: false
@@ -31,7 +33,7 @@ gatekeeper:
   # Minimum wall time between LLM calls (soft backpressure); 0 disables.
   rate_limit_min_interval_s: 0.0
 
-# Rough USD per 1M tokens for *logging estimates only* (not billing).
+# Rough USD per 1M tokens for *logging estimates only* (not billing; see OpenAI pricing).
 pricing_per_million_tokens:
   default:
     input: 10.0
@@ -42,6 +44,15 @@ pricing_per_million_tokens:
   gpt-4o:
     input: 2.5
     output: 10.0
+  gpt-5.5:
+    input: 5.0
+    output: 30.0
   gemini/gemini-2.0-flash:
     input: 0.1
     output: 0.4
+  gemini/gemini-2.5-flash:
+    input: 0.15
+    output: 0.6
+  gemini/gemini-3.5-flash:
+    input: 0.2
+    output: 0.8
